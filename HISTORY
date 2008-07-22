@@ -1,18 +1,22 @@
 LazyLoad Changelog
-------------------
+================================================================================
 
-Version 1.0.3 (2007-06-18):
+Version 1.0.4 (?)
+  * Fixed a bug that caused the load completion callback to fire immediately in
+    Safari 3.x.
+
+Version 1.0.3 (2007-06-18)
   * Added "force" parameter to the loadOnce() method to force execution of the
     callback even when all specified scripts have already been loaded.
 
-Version 1.0.2 (2007-06-02):
+Version 1.0.2 (2007-06-02)
   * Improved browser detection.
   * Switched to NaturalDocs for source documentation.
 
-Version 1.0.1 (2007-05-30):
+Version 1.0.1 (2007-05-30)
   * Fixed potential race condition when load() is called multiple times in
     succession.
   * Refactored to reduce complexity.
 
-Version 1.0.0 (2007-05-29):
+Version 1.0.0 (2007-05-29)
   * First release.
