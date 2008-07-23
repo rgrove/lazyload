@@ -34,15 +34,15 @@ var LazyLoad = function () {
   Array of queued load requests.
   */
   var queue = [];
-  
+
   /*
   Object: ua
   User agent information.
   */
   var ua;
-  
+
   // -- Group: Private Methods -------------------------------------------------
-  
+
   /*
   Method: getUserAgent
   Populates the _ua_ variable with user agent information. Uses a paraphrased
@@ -122,31 +122,35 @@ var LazyLoad = function () {
       for (i = 0; i < urls.length; ++i) {
         script = document.createElement('script');
         script.src = urls[i];
+
+        // If this is the last (or only) script in the array, listen for its
+        // load progress in IE and Safari 3.
+        if (i === urls.length - 1) {
+          if (ua.ie) {
+            // If this is IE, watch the last script's ready state.
+            script.onreadystatechange = function () {
+              if (this.readyState === 'loaded') {
+                LazyLoad.requestComplete();
+              }
+            };
+          } else if (ua.webkit >= 420) {
+            // Safari 3.0+ support the load event on script nodes. Technically
+            // Firefox supports this as well, but Firefox doesn't fire the event
+            // on a 404, which prevents queued scripts from being loaded.
+            script.addEventListener('load', function () {
+              LazyLoad.requestComplete();
+            });
+          }
+        }
+
         head.appendChild(script);
       }
 
-      if (!script) {
-        return;
-      }
-
-      if (ua.ie) {
-        // If this is IE, watch the last script's ready state.
-        script.onreadystatechange = function () {
-          if (this.readyState === 'loaded') {
-            LazyLoad.requestComplete();
-          }
-        };
-      } else if (ua.webkit >= 420) {
-        // Safari 3.0+ support the load event on script nodes. Technically
-        // Firefox supports this as well, but Firefox doesn't fire the event on
-        // a 404, which prevents queued scripts from being loaded.
-        script.addEventListener('load', function () {
-          LazyLoad.requestComplete();
-        });
-      } else {
+      if (!ua.ie && !(ua.webkit >= 420)) {
         // Try to use script node blocking to figure out when things have
-        // loaded. This works well in Firefox, but may or may not be reliable in
-        // other browsers. It definitely doesn't work in Safari 2.x.
+        // loaded. This works well in Firefox, but may or may not be
+        // reliable in other browsers. It definitely doesn't work in
+        // Safari 2.x.
         script = document.createElement('script');
         script.appendChild(document.createTextNode(
             'LazyLoad.requestComplete();'));
@@ -232,8 +236,8 @@ var LazyLoad = function () {
       pending = null;
 
       // Execute the next load request on the queue (if any).
-      if (queue.length > 0) {
-        request = queue.shift();
+      if (queue.length) {
+        request = queue.shift(); 
         this.load(request.urls, request.callback, request.obj, request.scope);
       }
     }
