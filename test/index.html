@@ -41,19 +41,21 @@
       function loadComplete(scripts) {
         if (scripts.constructor == Array) {
           log.value += '[';
-          
+
           for (var i = 0; i < scripts.length; i += 1) {
             log.value += scripts[i]
-            
+
             if (i < scripts.length - 1) {
               log.value += ', ';
             }
           }
-          
+
           log.value += "]\r\n";
         } else {
           log.value += scripts + "\r\n";
         }
+
+        alert(typeof YAHOO.util.Dom);
       }
 
       btnLoad.onclick = function () {

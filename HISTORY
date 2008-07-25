@@ -1,9 +1,14 @@
 LazyLoad Changelog
 ================================================================================
 
-Version 1.0.4 (?)
+Version 1.0.4 (2008-07-24)
+  * Improved reliability with all supported browsers.
+  * Reduced the minified size to 1751 bytes (a whopping 67 bytes smaller than
+    version 1.0.3).
   * Fixed a bug that caused the load completion callback to fire immediately in
     Safari 3.x.
+  * Fixed a bug that caused the load completion callback to fail to fire in
+    Internet Explorer if the script was loaded from the cache.
 
 Version 1.0.3 (2007-06-18)
   * Added "force" parameter to the loadOnce() method to force execution of the
