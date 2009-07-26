@@ -1,68 +1,98 @@
-/*
-Class: LazyLoad
+/**
+ * LazyLoad makes it easy and painless to lazily load one or more external
+ * JavaScript or CSS files on demand either during or after the rendering of
+ * a web page.
+ *
+ * Supported browsers include Firefox 2, Firefox 3, IE 6 through 8, Safari 3 and
+ * 4 (including iPhone), and Opera 9 and 10. Other browsers may or may not work
+ * and are not officially supported.
+ *
+ * @module lazyload
+ * @author Ryan Grove <ryan@wonko.com>
+ * @copyright (c) 2009 Ryan Grove <ryan@wonko.com>. All rights reserved.
+ * @license BSD License (http://www.opensource.org/licenses/bsd-license.html)
+ * @url http://wonko.com/post/painless_javascript_lazy_loading_with_lazyload
+ * @version 1.1.0
+ */
 
-LazyLoad makes it easy and painless to lazily load one or more JavaScript
-files on demand after a web page has been rendered.
+/**
+ * @class LazyLoad
+ * @static
+ */
+LazyLoad = function () {
 
-Supported browsers include Firefox 2.x, Firefox 3.x, Internet Explorer 6.x,
-Internet Explorer 7.x, Safari 3.x (including iPhone), and Opera 9.x. Other
-browsers may or may not work and are not officially supported.
+  // -- Private Variables ------------------------------------------------------
 
-Author:
-  Ryan Grove (ryan@wonko.com)
-
-Copyright:
-  Copyright (c) 2008 Ryan Grove (ryan@wonko.com). All rights reserved.
-
-License:
-  BSD License (http://www.opensource.org/licenses/bsd-license.html)
-
-URL:
-  http://wonko.com/post/painless_javascript_lazy_loading_with_lazyload
-
-Version:
-  1.0.4 (2008-07-24)
-*/
-var LazyLoad = function () {
-
-  // -- Group: Private Variables -----------------------------------------------
-
-  /*
-  Object: d
-  Shorthand reference to the browser's *document* object.
-  */
+  // Shorthand reference to the browser's document object.
   var d = document,
 
-  /*
-  Object: pending
-  Pending request object, or null if no request is in progress.
-  */
-  pending = null,
+  // Request currently in progress, if any.
+  pending,
 
-  /*
-  Array: queue
-  Array of queued load requests.
-  */
+  // Array of queued requests (or groups of requests).
   queue = [],
 
-  /*
-  Object: ua
-  User agent information.
-  */
+  // Self-reference.
+  self,
+
+  // User agent information.
   ua;
 
-  // -- Group: Private Methods -------------------------------------------------
+  // -- Private Methods --------------------------------------------------------
 
-  /*
-  Method: getUserAgent
-  Populates the *ua* variable with user agent information. Uses a paraphrased
-  version of the YUI user agent detection code.
-  */
+  function createNode(name, attrs) {
+    var node = d.createElement(name), attr;
+
+    for (attr in attrs) {
+      if (attrs.hasOwnProperty(attr)) {
+        node.setAttribute(attr, attrs[attr]);
+      }
+    }
+
+    return node;
+  }
+
+  function finish(node) {
+    if (!pending) { return; }
+
+    var index = node.getAttribute('index');
+
+    node.removeAttribute('index');
+    pending.urls.splice(index, 1);
+
+    // If this is the last of the pending URLs, execute the callback and
+    // start the next request in the queue (if any).
+    if (!pending.urls.length) {
+      if (pending.callback) {
+        if (pending.obj) {
+          if (pending.scope) {
+            pending.callback.call(pending.obj);
+          } else {
+            pending.callback.call(window, pending.obj);
+          }
+        } else {
+          pending.callback.call();
+        }
+      }
+
+      pending = null;
+
+      if (queue.length) {
+        load();
+      }
+    }
+  }
+
+  /**
+   * Populates the <tt>ua</tt> variable with useragent information. Uses a
+   * paraphrased version of the YUI useragent detection code.
+   *
+   * @method getUserAgent
+   * @private
+   */
   function getUserAgent() {
     // No need to run again if ua is already populated.
-    if (ua) {
-      return;
-    }
+    if (ua) { return; }
 
     var nua = navigator.userAgent, m;
 
@@ -93,161 +123,99 @@ var LazyLoad = function () {
     }
   }
 
-  return {
-    // -- Group: Public Methods ------------------------------------------------
+  function load(type, urls, callback, obj, scope) {
+    var head, i, len, node, set, url;
 
-    /*
-    Method: load
-    Loads the specified script(s) and runs the specified callback function
-    when all scripts have been completely loaded.
+    // Determine browser type and version.
+    getUserAgent();
 
-    Parameters:
-      urls     - URL or array of URLs of scripts to load
-      callback - function to call when loading is complete
-      obj      - (optional) object to pass to the callback function
-      scope    - (optional) if true, *callback* will be executed in the scope
-                 of *obj* instead of receiving *obj* as an argument.
-    */
-    load: function (urls, callback, obj, scope) {
-      var head = d.getElementsByTagName('head')[0],
-          i, script;
-
-      if (urls) {
-        // Cast urls to an Array.
-        urls = urls.constructor === Array ? urls : [urls];
-
-        // Create a request object for each URL. If multiple URLs are specified,
-        // the callback will only be executed after the last URL is loaded.
-        for (i = 0; i < urls.length; ++i) {
-          queue.push({
-            'url'     : urls[i],
-            'callback': i === urls.length - 1 ? callback : null,
-            'obj'     : obj,
-            'scope'   : scope
-          });
-        }
-      }
-
-      // If a previous load request is currently in progress, we'll wait our
-      // turn. Otherwise, grab the first request object off the top of the
-      // queue.
-      if (pending || !(pending = queue.shift())) {
-        return;
-      }
-
-      // Determine browser type and version for later use.
-      getUserAgent();
-
-      // Load the script.
-      script = d.createElement('script');
-      script.src = pending.url;
-
-      if (ua.ie) {
-        // If this is IE, watch the last script's ready state.
-        script.onreadystatechange = function () {
-          if (this.readyState === 'loaded' ||
-              this.readyState === 'complete') {
-            LazyLoad.requestComplete();
-          }
-        };
-      } else if (ua.gecko || ua.webkit >= 420) {
-        // Firefox and Safari 3.0+ support the load/error events on script
-        // nodes.
-        script.onload  = LazyLoad.requestComplete;
-        script.onerror = LazyLoad.requestComplete;
-      }
-
-      head.appendChild(script);
-
-      if (!ua.ie && !ua.gecko && !(ua.webkit >= 420)) {
-        // Try to use script node blocking to figure out when things have
-        // loaded. This works well in Opera, but may or may not be reliable in
-        // other browsers. It definitely doesn't work in Safari 2.x.
-        script = d.createElement('script');
-        script.appendChild(d.createTextNode('LazyLoad.requestComplete();'));
-        head.appendChild(script);
-      }
-    },
-
-    /*
-    Method: loadOnce
-    Loads the specified script(s) only if they haven't already been loaded
-    and runs the specified callback function when loading is complete. If all
-    of the specified scripts have already been loaded, the callback function
-    will not be executed unless the *force* parameter is set to true.
-
-    Parameters:
-      urls     - URL or array of URLs of scripts to load
-      callback - function to call when loading is complete
-      obj      - (optional) object to pass to the callback function
-      scope    - (optional) if true, *callback* will be executed in the scope
-                 of *obj* instead of receiving *obj* as an argument
-      force    - (optional) if true, *callback* will always be executed, even if
-                 all specified scripts have already been loaded
-    */
-    loadOnce: function (urls, callback, obj, scope, force) {
-      var newUrls = [],
-          scripts = d.getElementsByTagName('script'),
-          i, j, loaded, url;
-
+    if (type && urls) {
+      // Cast urls to an Array.
       urls = urls.constructor === Array ? urls : [urls];
 
-      for (i = 0; i < urls.length; ++i) {
-        loaded = false;
-        url    = urls[i];
-
-        for (j = 0; j < scripts.length; ++j) {
-          if (url === scripts[j].src) {
-            loaded = true;
-            break;
-          }
+      // Create a request object for each URL. If multiple URLs are specified,
+      // the callback will only be executed after all URLs have been loaded.
+      //
+      // Unfortunately, in IE6 we can't load script requests in parallel because
+      // we can't ensure execution order, so it gets "special" treatment.
+      if (ua.ie && ua.ie < 7) {
+        for (i = 0, len = urls.length; i < len; ++i) {
+          queue.push({
+            urls    : [urls[i]],
+            callback: i === urls.length - 1 ? callback : null, // callback is only added to the last URL for IE6
+            obj     : obj,
+            scope   : scope,
+            type    : type
+          });
         }
-
-        if (!loaded) {
-          newUrls.push(url);
-        }
-      }
-
-      if (newUrls.length > 0) {
-        LazyLoad.load(newUrls, callback, obj, scope);
-      } else if (force) {
-        if (obj) {
-          if (scope) {
-            callback.call(obj);
-          } else {
-            callback.call(window, obj);
-          }
-        } else {
-          callback.call();
-        }
-      }
-    },
-
-    /*
-    Method: requestComplete
-    Handles callback execution and cleanup after a request is completed. This
-    method should not be called manually.
-    */
-    requestComplete: function () {
-      // Execute the callback.
-      if (pending.callback) {
-        if (pending.obj) {
-          if (pending.scope) {
-            pending.callback.call(pending.obj);
-          } else {
-            pending.callback.call(window, pending.obj);
-          }
-        } else {
-          pending.callback.call();
-        }
-      }
-
-      pending = null;
-
-      // Execute the next load request on the queue (if any).
-      if (queue.length) {
-        LazyLoad.load();
+      } else {
+        queue.push({
+          urls    : urls,
+          callback: callback,
+          obj     : obj,
+          scope   : scope,
+          type    : type
+        });
       }
     }
+
+    // If a previous load request is currently in progress, we'll wait our
+    // turn. Otherwise, grab the next item in the queue.
+    if (pending || !(pending = queue.shift())) {
+      return;
+    }
+
+    head = d.getElementsByTagName('head')[0];
+
+    for (i = 0, len = pending.urls.length; i < len; ++i) {
+      url = pending.urls[i];
+
+      if (type === 'css') {
+        node = createNode('link', {
+          href : url,
+          index: i,
+          rel  : 'stylesheet',
+          type : 'text/css'
+        });
+      } else {
+        node = createNode('script', {
+          index: i,
+          src  : url
+        });
+      }
+
+      if (ua.ie) {
+        node.onreadystatechange = function () {
+          var readyState = this.readyState;
+
+          if (readyState === 'loaded' || readyState === 'complete') {
+            node.onreadystatechange = null;
+            finish(node);
+          }
+        };
+      } else {
+        node.onload = node.onerror = function () { finish(node); };
+      }
+
+      head.appendChild(node);
+
+      // Gecko and WebKit don't support the onload event on link nodes, so we
+      // just have to finish immediately and hope for the best.
+      if (type === 'css' && (ua.gecko || ua.webkit)) {
+        finish(node);
+      }
+    }
+  }
+
+  self = {
+    css: function (urls, callback, obj, scope) {
+      load('css', urls, callback, obj, scope);
+    },
+
+    js: function (urls, callback, obj, scope) {
+      load('js', urls, callback, obj, scope);
+    }
   };
+
+  return self;
 }();
