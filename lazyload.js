@@ -32,9 +32,6 @@ LazyLoad = function () {
   // Array of queued requests (or groups of requests).
   queue = [],
 
-  // Self-reference.
-  self,
-
   // User agent information.
   ua;
 
@@ -52,26 +49,27 @@ LazyLoad = function () {
     return node;
   }
 
-  function finish(node) {
+  function finish() {
     if (!pending) { return; }
 
-    var index = node.getAttribute('index');
+    var callback = pending.callback,
+        obj      = pending.obj,
+        urls     = pending.urls;
 
-    node.removeAttribute('index');
-    pending.urls.splice(index, 1);
+    urls.shift();
 
     // If this is the last of the pending URLs, execute the callback and
     // start the next request in the queue (if any).
-    if (!pending.urls.length) {
-      if (pending.callback) {
-        if (pending.obj) {
+    if (!urls.length) {
+      if (callback) {
+        if (obj) {
           if (pending.scope) {
-            pending.callback.call(pending.obj);
+            callback.call(obj);
           } else {
-            pending.callback.call(window, pending.obj);
+            callback.call(window, obj);
           }
         } else {
-          pending.callback.call();
+          callback.call();
         }
       }
 
@@ -129,7 +127,7 @@ LazyLoad = function () {
   }
 
   function load(type, urls, callback, obj, scope) {
-    var head, i, len, node, set, url;
+    var head, i, len, node, url;
 
     // Determine browser type and version.
     getUserAgent();
@@ -144,7 +142,11 @@ LazyLoad = function () {
       // Sadly, Firefox and Opera are the only browsers capable of loading
       // scripts in parallel while preserving execution order. In all other
       // browsers, scripts must be loaded sequentially.
-      if (ua.gecko || ua.opera) {
+      //
+      // All browsers respect CSS specificity based on the order of the link
+      // elements in the DOM, regardless of the order in which the stylesheets
+      // are actually downloaded.
+      if (type === 'css' || ua.gecko || ua.opera) {
         queue.push({
           urls    : [].concat(urls), // concat ensures copy by value
           callback: callback,
@@ -172,22 +174,20 @@ LazyLoad = function () {
     }
 
     head = d.getElementsByTagName('head')[0];
+    type = pending.type;
+    urls = pending.urls;
 
-    for (i = 0, len = pending.urls.length; i < len; ++i) {
-      url = pending.urls[i];
+    for (i = 0, len = urls.length; i < len; ++i) {
+      url = urls[i];
 
       if (type === 'css') {
         node = createNode('link', {
           href : url,
-          index: i,
           rel  : 'stylesheet',
           type : 'text/css'
         });
       } else {
-        node = createNode('script', {
-          index: i,
-          src  : url
-        });
+        node = createNode('script', {src: url});
       }
 
       if (ua.ie) {
@@ -195,25 +195,23 @@ LazyLoad = function () {
           var readyState = this.readyState;
 
           if (readyState === 'loaded' || readyState === 'complete') {
-            node.onreadystatechange = null;
-            finish(node);
+            this.onreadystatechange = null;
+            finish();
           }
         };
+      } else if (type === 'css' && (ua.gecko || ua.webkit)) {
+        // Gecko and WebKit don't support the onload event on link nodes, so we
+        // just have to finish immediately and hope for the best.
+        setTimeout(finish, 100 * len);
       } else {
-        node.onload = function () { finish(node); };
+        node.onload = node.onerror = finish;
       }
 
       head.appendChild(node);
-
-      // Gecko and WebKit don't support the onload event on link nodes, so we
-      // just have to finish immediately and hope for the best.
-      if (type === 'css' && (ua.gecko || ua.webkit)) {
-        finish(node);
-      }
     }
   }
 
-  self = {
+  return {
     css: function (urls, callback, obj, scope) {
       load('css', urls, callback, obj, scope);
     },
@@ -222,6 +220,4 @@ LazyLoad = function () {
       load('js', urls, callback, obj, scope);
     }
   };
-
-  return self;
 }();

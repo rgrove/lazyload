@@ -3,56 +3,177 @@
   <head>
     <title>LazyLoad Test</title>
     <style type="text/css">
-      #log { font: 10pt Consolas, Monaco, fixed; width: 100%; }
+      fieldset {
+        border: 1px solid #afafaf;
+        margin-bottom: 1em;
+      }
+
+      .log {
+        font: 10pt Consolas, Monaco, fixed;
+        width: 100%;
+      }
+
+      #css-status {
+        background-color: #fff;
+        height: 30px;
+        margin: 10px auto;
+        width: 100px;
+      }
+
+      #n1,#n2,#n3,#n4,#n5 { width: 0; }
     </style>
   </head>
   <body>
     <h1>LazyLoad Test</h1>
 
     <form action="" method="get">
-      <p>
-        <input type="button" id="btnLoad" value="Load JS (sequential calls)" />
-        <input type="button" id="btnLoadSingle" value="Load JS (single call)" />
-      </p>
+      <fieldset>
+        <legend>JavaScript</legend>
 
-      <p>
-        <textarea id="log" rows="20" cols="50"></textarea>
-      </p>
+        <p>
+          <input type="button" id="btnLoadJS" value="Load JS (sequential calls)" />
+          <input type="button" id="btnLoadJSSingle" value="Load JS (single call)" />
+        </p>
+
+        <p>
+          <textarea id="jslog" class="log" rows="15" cols="50"></textarea>
+        </p>
+      </fieldset>
+
+      <fieldset>
+        <legend>CSS</legend>
+
+        <p>
+          <input type="button" id="btnLoadCSS" value="Load CSS (sequential calls)" />
+          <input type="button" id="btnLoadCSSSingle" value="Load CSS (single call)" />
+        </p>
+
+        <p>
+          <textarea id="csslog" class="log" rows="15" cols="50"></textarea>
+        </p>
+
+        <div id="css-status"></div>
+
+        <div id="n1"></div>
+        <div id="n2"></div>
+        <div id="n3"></div>
+        <div id="n4"></div>
+        <div id="n5"></div>
+      </fieldset>
     </form>
 
-    <script src="../lazyload.js"></script>
+    <script src="lazyload.js"></script>
     <script type="text/javascript">
-      var btnLoad           = document.getElementById('btnLoad'),
-          btnLoadSingle     = document.getElementById('btnLoadSingle'),
-          logEl             = document.getElementById('log'),
-          scripts           = [
-            'http://pieisgood.org/test/lazyload/script.php?num=1',
-            'http://pieisgood.org/test/lazyload/script.php?num=2',
-            'http://pieisgood.org/test/lazyload/script.php?num=3',
-            'http://pieisgood.org/test/lazyload/script.php?num=4',
-            'http://pieisgood.org/test/lazyload/script.php?num=5'
+      var btnLoadCSS       = document.getElementById('btnLoadCSS'),
+          btnLoadCSSSingle = document.getElementById('btnLoadCSSSingle'),
+          btnLoadJS        = document.getElementById('btnLoadJS'),
+          btnLoadJSSingle  = document.getElementById('btnLoadJSSingle'),
+          cssLogEl         = document.getElementById('csslog'),
+          jsLogEl          = document.getElementById('jslog'),
+
+          n1 = document.getElementById('n1'),
+          n2 = document.getElementById('n2'),
+          n3 = document.getElementById('n3'),
+          n4 = document.getElementById('n4'),
+          n5 = document.getElementById('n5'),
+
+          cssInterval = null,
+
+          css = [
+            'http://pieisgood.org/test/lazyload/css.php?num=1',
+            'http://pieisgood.org/test/lazyload/css.php?num=2',
+            'http://pieisgood.org/test/lazyload/css.php?num=3',
+            'http://pieisgood.org/test/lazyload/css.php?num=4',
+            'http://pieisgood.org/test/lazyload/css.php?num=5'
+          ],
+
+          js = [
+            'http://pieisgood.org/test/lazyload/js.php?num=1',
+            'http://pieisgood.org/test/lazyload/js.php?num=2',
+            'http://pieisgood.org/test/lazyload/js.php?num=3',
+            'http://pieisgood.org/test/lazyload/js.php?num=4',
+            'http://pieisgood.org/test/lazyload/js.php?num=5'
           ];
 
-      function loadComplete(scripts) {
-        log('callback');
+      function cssComplete() {
+        csslog('callback');
+      }
+
+      function csslog(message) {
+        cssLogEl.value += "[" + (new Date()).toTimeString() + "] " + message + "\r\n";
+      }
+
+      function cssPollStart() {
+        var check = [n1, n2, n3, n4, n5],
+            i, item;
+
+        cssPollStop();
+
+        var links = document.getElementsByTagName('link');
+
+        while (links.length) {
+          links[0].parentNode.removeChild(links[0]);
+          links = document.getElementsByTagName('link');
+        }
+
+        cssInterval = setInterval(function () {
+          for (i = 0; i < check.length; ++i) {
+            item = check[i];
+
+            if (item.offsetWidth > 0) {
+              check.splice(i, 1);
+              i -= 1;
+
+              csslog('stylesheet ' + item.id.substr(1) + ' applied');
+            }
+          }
+
+          if (!check.length) {
+            cssPollStop();
+          }
+        }, 15);
+      }
+
+      function cssPollStop() {
+        clearInterval(cssInterval);
+      }
+
+      function jsComplete() {
+        jslog('callback');
       }
       
-      function log(message) {
-        logEl.value += "[" + (new Date()).toTimeString() + "] " + message + "\r\n";
+      function jslog(message) {
+        jsLogEl.value += "[" + (new Date()).toTimeString() + "] " + message + "\r\n";
       }
 
-      btnLoad.onclick = function () {
-        log('loading (sequential calls)');
+      btnLoadCSS.onclick = function () {
+        cssPollStart();
+        csslog('loading (sequential calls)');
 
-        for (var i = 0; i < scripts.length; i += 1) {
-          LazyLoad.js(scripts[i], loadComplete, scripts[i]);
+        for (var i = 0; i < css.length; i += 1) {
+          LazyLoad.css(css[i], cssComplete);
         }
       }
 
-      btnLoadSingle.onclick = function () {
-        log('loading (single call)');
+      btnLoadCSSSingle.onclick = function () {
+        cssPollStart();
+        csslog('loading (single call)');
 
-        LazyLoad.js(scripts, loadComplete, scripts);
+        LazyLoad.css(css, cssComplete);
+      }
+
+      btnLoadJS.onclick = function () {
+        jslog('loading (sequential calls)');
+
+        for (var i = 0; i < js.length; i += 1) {
+          LazyLoad.js(js[i], jsComplete);
+        }
+      }
+
+      btnLoadJSSingle.onclick = function () {
+        jslog('loading (single call)');
+
+        LazyLoad.js(js, jsComplete);
       }
     </script>
   </body>

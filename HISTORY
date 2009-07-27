@@ -2,13 +2,17 @@ LazyLoad Changelog
 ================================================================================
 
 Version 2.0.0 (?)
-  * When an array of URLs is specified, they will be loaded in parallel in
-    browsers that support it (currently Firefox and Opera).
-  * Added support for CSS loading (currently experimental).
-  * The load() method has been replaced with css() and js() methods for loading
+  * Added support for CSS.
+  * When an array of URLs is specified, the resources will be loaded in parallel
+    in browsers that support it. Currently, all browsers support loading CSS in
+    parallel, but only Gecko and Opera support parallel scripts while preserving
+		execution order. CSS caveat: Gecko and WebKit don't support the onload event
+		for link nodes, so the CSS callback will fire almost immediately in those
+		browsers.
+  * The load() method has been replaced by css() and js() methods for loading
     CSS and JS, respectively.
-  * The loadOnce() method has been removed.
-  * Improved reliability in Opera.
+  * The loadOnce() method has been removed, since it wasn't terribly useful.
+  * Improved reliability in all browsers.
 
 Version 1.0.4 (2008-07-24)
   * Improved reliability with all supported browsers.
