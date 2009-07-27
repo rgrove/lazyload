@@ -1,8 +1,9 @@
+<!doctype html>
 <html>
   <head>
     <title>LazyLoad Test</title>
     <style type="text/css">
-      #log { font: 10pt Consolas, fixed; width: 100%; }
+      #log { font: 10pt Consolas, Monaco, fixed; width: 100%; }
     </style>
   </head>
   <body>
@@ -10,15 +11,10 @@
 
     <form action="" method="get">
       <p>
-        <input type="button" id="btnLoad" value="Load (sequential calls)" />
-        <input type="button" id="btnLoadOnce" value="Load Once (sequential calls)" />
+        <input type="button" id="btnLoad" value="Load JS (sequential calls)" />
+        <input type="button" id="btnLoadSingle" value="Load JS (single call)" />
       </p>
-      
-      <p>
-        <input type="button" id="btnLoadSingle" value="Load (single call)" />
-        <input type="button" id="btnLoadOnceSingle" value="Load Once (single call)" />
-      </p>
-      
+
       <p>
         <textarea id="log" rows="20" cols="50"></textarea>
       </p>
@@ -27,55 +23,36 @@
     <script src="../lazyload.js"></script>
     <script type="text/javascript">
       var btnLoad           = document.getElementById('btnLoad'),
-          btnLoadOnce       = document.getElementById('btnLoadOnce'),
           btnLoadSingle     = document.getElementById('btnLoadSingle'),
-          btnLoadOnceSingle = document.getElementById('btnLoadOnceSingle'),
-          log               = document.getElementById('log'),
+          logEl             = document.getElementById('log'),
           scripts           = [
-            'http://yui.yahooapis.com/2.2.2/build/yahoo/yahoo-min.js',
-            'http://yui.yahooapis.com/2.2.2/build/dom/dom-min.js',
-            'http://archive.dojotoolkit.org/dojo-2007-05-15/widget/dojo.js',
-            'http://dojotoolkit.org/misc/jquery.js'
+            'http://pieisgood.org/test/lazyload/script.php?num=1',
+            'http://pieisgood.org/test/lazyload/script.php?num=2',
+            'http://pieisgood.org/test/lazyload/script.php?num=3',
+            'http://pieisgood.org/test/lazyload/script.php?num=4',
+            'http://pieisgood.org/test/lazyload/script.php?num=5'
           ];
 
       function loadComplete(scripts) {
-        if (scripts.constructor == Array) {
-          log.value += '[';
-
-          for (var i = 0; i < scripts.length; i += 1) {
-            log.value += scripts[i]
-
-            if (i < scripts.length - 1) {
-              log.value += ', ';
-            }
-          }
-
-          log.value += "]\r\n";
-        } else {
-          log.value += scripts + "\r\n";
-        }
-
-        alert(typeof YAHOO.util.Dom);
+        log('callback');
+      }
+      
+      function log(message) {
+        logEl.value += "[" + (new Date()).toTimeString() + "] " + message + "\r\n";
       }
 
       btnLoad.onclick = function () {
-        for (var i = 0; i < scripts.length; i += 1) {
-          LazyLoad.load(scripts[i], loadComplete, scripts[i]);
-        }
-      }
+        log('loading (sequential calls)');
 
-      btnLoadOnce.onclick = function () {
         for (var i = 0; i < scripts.length; i += 1) {
-          LazyLoad.loadOnce(scripts[i], loadComplete, scripts[i]);
+          LazyLoad.js(scripts[i], loadComplete, scripts[i]);
         }
       }
 
       btnLoadSingle.onclick = function () {
-        LazyLoad.load(scripts, loadComplete, scripts);
-      }
+        log('loading (single call)');
 
-      btnLoadOnceSingle.onclick = function () {
-        LazyLoad.loadOnce(scripts, loadComplete, scripts);
+        LazyLoad.js(scripts, loadComplete, scripts);
       }
     </script>
   </body>

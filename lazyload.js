@@ -12,7 +12,7 @@
  * @copyright (c) 2009 Ryan Grove <ryan@wonko.com>. All rights reserved.
  * @license BSD License (http://www.opensource.org/licenses/bsd-license.html)
  * @url http://wonko.com/post/painless_javascript_lazy_loading_with_lazyload
- * @version 1.1.0
+ * @version 2.0.0
  */
 
 /**
@@ -94,31 +94,36 @@ LazyLoad = function () {
     // No need to run again if ua is already populated.
     if (ua) { return; }
 
-    var nua = navigator.userAgent, m;
+    var nua = navigator.userAgent,
+        pF  = parseFloat,
+        m;
 
     ua = {
       gecko : 0,
       ie    : 0,
+      opera : 0,
       webkit: 0
     };
 
     m = nua.match(/AppleWebKit\/(\S*)/);
 
     if (m && m[1]) {
-      ua.webkit = parseFloat(m[1]);
+      ua.webkit = pF(m[1]);
     } else {
       m = nua.match(/MSIE\s([^;]*)/);
 
       if (m && m[1]) {
-        ua.ie = parseFloat(m[1]);
+        ua.ie = pF(m[1]);
       } else if ((/Gecko\/(\S*)/).test(nua)) {
         ua.gecko = 1;
 
         m = nua.match(/rv:([^\s\)]*)/);
 
         if (m && m[1]) {
-          ua.gecko = parseFloat(m[1]);
+          ua.gecko = pF(m[1]);
         }
+      } else if (m = nua.match(/Opera\/(\S*)/)) {
+        ua.opera = pF(m[1]);
       }
     }
   }
@@ -136,26 +141,27 @@ LazyLoad = function () {
       // Create a request object for each URL. If multiple URLs are specified,
       // the callback will only be executed after all URLs have been loaded.
       //
-      // Unfortunately, in IE6 we can't load script requests in parallel because
-      // we can't ensure execution order, so it gets "special" treatment.
-      if (ua.ie && ua.ie < 7) {
-        for (i = 0, len = urls.length; i < len; ++i) {
-          queue.push({
-            urls    : [urls[i]],
-            callback: i === urls.length - 1 ? callback : null, // callback is only added to the last URL for IE6
-            obj     : obj,
-            scope   : scope,
-            type    : type
-          });
-        }
-      } else {
+      // Sadly, Firefox and Opera are the only browsers capable of loading
+      // scripts in parallel while preserving execution order. In all other
+      // browsers, scripts must be loaded sequentially.
+      if (ua.gecko || ua.opera) {
         queue.push({
-          urls    : urls,
+          urls    : [].concat(urls), // concat ensures copy by value
           callback: callback,
           obj     : obj,
           scope   : scope,
           type    : type
         });
+      } else {
+        for (i = 0, len = urls.length; i < len; ++i) {
+          queue.push({
+            urls    : [urls[i]],
+            callback: i === len - 1 ? callback : null, // callback is only added to the last URL
+            obj     : obj,
+            scope   : scope,
+            type    : type
+          });
+        }
       }
     }
 
@@ -194,7 +200,7 @@ LazyLoad = function () {
           }
         };
       } else {
-        node.onload = node.onerror = function () { finish(node); };
+        node.onload = function () { finish(node); };
       }
 
       head.appendChild(node);
