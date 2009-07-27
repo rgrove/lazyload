@@ -4,8 +4,8 @@
  * a web page.
  *
  * Supported browsers include Firefox 2, Firefox 3, IE 6 through 8, Safari 3 and
- * 4 (including iPhone), and Opera 9 and 10. Other browsers may or may not work
- * and are not officially supported.
+ * 4 (including iPhone), Chrome, and Opera 9 and 10. Other browsers may or may
+ * not work and are not officially supported.
  *
  * @module lazyload
  * @author Ryan Grove <ryan@wonko.com>
@@ -26,11 +26,14 @@ LazyLoad = function () {
   // Shorthand reference to the browser's document object.
   var d = document,
 
-  // Request currently in progress, if any.
-  pending,
+  // Reference to the <head> element.
+  head,
 
-  // Array of queued requests (or groups of requests).
-  queue = [],
+  // Requests currently in progress, if any.
+  pending = {},
+
+  // Queued requests.
+  queue = {css: [], js: []},
 
   // User agent information.
   ua;
@@ -49,12 +52,14 @@ LazyLoad = function () {
     return node;
   }
 
-  function finish() {
-    if (!pending) { return; }
+  function finish(type) {
+    var p = pending[type];
 
-    var callback = pending.callback,
-        obj      = pending.obj,
-        urls     = pending.urls;
+    if (!p) { return; }
+
+    var callback = p.callback,
+        obj      = p.obj,
+        urls     = p.urls;
 
     urls.shift();
 
@@ -63,7 +68,7 @@ LazyLoad = function () {
     if (!urls.length) {
       if (callback) {
         if (obj) {
-          if (pending.scope) {
+          if (p.scope) {
             callback.call(obj);
           } else {
             callback.call(window, obj);
@@ -73,10 +78,10 @@ LazyLoad = function () {
         }
       }
 
-      pending = null;
+      pending[type] = null;
 
-      if (queue.length) {
-        load();
+      if (queue[type].length) {
+        load(type);
       }
     }
   }
@@ -127,12 +132,12 @@ LazyLoad = function () {
   }
 
   function load(type, urls, callback, obj, scope) {
-    var head, i, len, node, url;
+    var i, len, node, p, url;
 
     // Determine browser type and version.
     getUserAgent();
 
-    if (type && urls) {
+    if (urls) {
       // Cast urls to an Array.
       urls = urls.constructor === Array ? urls : [urls];
 
@@ -147,35 +152,32 @@ LazyLoad = function () {
       // elements in the DOM, regardless of the order in which the stylesheets
       // are actually downloaded.
       if (type === 'css' || ua.gecko || ua.opera) {
-        queue.push({
+        queue[type].push({
           urls    : [].concat(urls), // concat ensures copy by value
           callback: callback,
           obj     : obj,
-          scope   : scope,
-          type    : type
+          scope   : scope
         });
       } else {
         for (i = 0, len = urls.length; i < len; ++i) {
-          queue.push({
+          queue[type].push({
             urls    : [urls[i]],
             callback: i === len - 1 ? callback : null, // callback is only added to the last URL
             obj     : obj,
-            scope   : scope,
-            type    : type
+            scope   : scope
           });
         }
       }
     }
 
-    // If a previous load request is currently in progress, we'll wait our
-    // turn. Otherwise, grab the next item in the queue.
-    if (pending || !(pending = queue.shift())) {
+    // If a previous load request of this type is currently in progress, we'll
+    // wait our turn. Otherwise, grab the next item in the queue.
+    if (pending[type] || !(p = pending[type] = queue[type].shift())) {
       return;
     }
 
-    head = d.getElementsByTagName('head')[0];
-    type = pending.type;
-    urls = pending.urls;
+    head = head || d.getElementsByTagName('head')[0];
+    urls = p.urls;
 
     for (i = 0, len = urls.length; i < len; ++i) {
       url = urls[i];
@@ -196,15 +198,15 @@ LazyLoad = function () {
 
           if (readyState === 'loaded' || readyState === 'complete') {
             this.onreadystatechange = null;
-            finish();
+            finish(type);
           }
         };
       } else if (type === 'css' && (ua.gecko || ua.webkit)) {
         // Gecko and WebKit don't support the onload event on link nodes, so we
-        // just have to finish immediately and hope for the best.
-        setTimeout(finish, 100 * len);
+        // just have to finish after a brief delay and hope for the best.
+        setTimeout(function () { finish(type); }, 50 * len);
       } else {
-        node.onload = node.onerror = finish;
+        node.onload = node.onerror = function () { finish(type); };
       }
 
       head.appendChild(node);
