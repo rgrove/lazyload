@@ -7,11 +7,36 @@
  * 4 (including iPhone), Chrome, and Opera 9 and 10. Other browsers may or may
  * not work and are not officially supported.
  *
+ * Visit http://github.com/rgrove/lazyload/ for more info.
+ *
+ * Copyright (c) 2009 Ryan Grove <ryan@wonko.com>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *   * Redistributions of source code must retain the above copyright notice,
+ *     this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *   * Neither the name of this project nor the names of its contributors may be
+ *     used to endorse or promote products derived from this software without
+ *     specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
  * @module lazyload
- * @author Ryan Grove <ryan@wonko.com>
- * @copyright (c) 2009 Ryan Grove <ryan@wonko.com>. All rights reserved.
- * @license BSD License (http://www.opensource.org/licenses/bsd-license.html)
- * @url http://wonko.com/post/painless_javascript_lazy_loading_with_lazyload
  * @version 2.0.0
  */
 
@@ -40,6 +65,15 @@ LazyLoad = function () {
 
   // -- Private Methods --------------------------------------------------------
 
+  /**
+   * Creates and returns an HTML element with the specified name and attributes.
+   *
+   * @method createNode
+   * @param {String} name element name
+   * @param {Object} attrs name/value mapping of element attributes
+   * @return {HTMLElement}
+   * @private
+   */
   function createNode(name, attrs) {
     var node = d.createElement(name), attr;
 
@@ -52,13 +86,21 @@ LazyLoad = function () {
     return node;
   }
 
+  /**
+   * Called when the current pending resource of the specified type has finished
+   * loading. Executes the associated callback (if any) and loads the next
+   * resource in the queue.
+   *
+   * @method finish
+   * @param {String} type resource type ('css' or 'js')
+   * @private
+   */
   function finish(type) {
     var p = pending[type];
 
     if (!p) { return; }
 
     var callback = p.callback,
-        obj      = p.obj,
         urls     = p.urls;
 
     urls.shift();
@@ -67,15 +109,7 @@ LazyLoad = function () {
     // start the next request in the queue (if any).
     if (!urls.length) {
       if (callback) {
-        if (obj) {
-          if (p.scope) {
-            callback.call(obj);
-          } else {
-            callback.call(window, obj);
-          }
-        } else {
-          callback.call();
-        }
+        callback.call(p.scope || window, p.obj);
       }
 
       pending[type] = null;
@@ -87,7 +121,7 @@ LazyLoad = function () {
   }
 
   /**
-   * Populates the <tt>ua</tt> variable with useragent information. Uses a
+   * Populates the <code>ua</code> variable with useragent information. Uses a
    * paraphrased version of the YUI useragent detection code.
    *
    * @method getUserAgent
@@ -131,6 +165,29 @@ LazyLoad = function () {
     }
   }
 
+  /**
+   * Loads the specified resources, or the next resource of the specified type
+   * in the queue if no resources are specified. If a resource of the specified
+   * type is already being loaded, the new request will be queued until the
+   * first request has been finished.
+   *
+   * When an array of resource URLs is specified, those URLs will be loaded in
+   * parallel if it is possible to do so while preserving execution order. All
+   * browsers support parallel loading of CSS, but only Firefox and Opera
+   * support parallel loading of scripts. In browsers other than Firefox and
+   * Opera, scripts will be queued and loaded one at a time to ensure correct
+   * execution order.
+   *
+   * @method load
+   * @param {String} type resource type ('css' or 'js')
+   * @param {String|Array} urls (optional) URL or array of URLs to load
+   * @param {Function} callback (optional) callback function to execute when the
+   *   resource is loaded
+   * @param {Object} obj (optional) object to pass to the callback function
+   * @param {Object} scope (optional) if provided, the callback function will be
+   *   executed in this object's scope
+   * @private
+   */
   function load(type, urls, callback, obj, scope) {
     var i, len, node, p, url;
 
@@ -214,12 +271,58 @@ LazyLoad = function () {
   }
 
   return {
+
+    /**
+     * Requests the specified CSS URL or URLs and executes the specified
+     * callback (if any) when they have finished loading. If an array of URLs is
+     * specified, the stylesheets will be loaded in parallel and the callback
+     * will be executed after all stylesheets have finished loading.
+     *
+     * Currently, Firefox and WebKit don't provide any way to determine when a
+     * stylesheet has finished loading. In those browsers, the callback will be
+     * executed after a brief delay. For information on a manual technique you
+     * can use to detect when CSS has actually finished loading in Firefox and
+     * WebKit, see http://wonko.com/post/how-to-prevent-yui-get-race-conditions
+     * (which applies to LazyLoad as well, despite being originally written in
+     * in reference to the YUI Get utility).
+     *
+     * @method css
+     * @param {String|Array} urls CSS URL or array of CSS URLs to load
+     * @param {Function} callback (optional) callback function to execute when
+     *   the specified stylesheets are loaded
+     * @param {Object} obj (optional) object to pass to the callback function
+     * @param {Object} scope (optional) if provided, the callback function will
+     *   be executed in this object's scope
+     * @static
+     */
     css: function (urls, callback, obj, scope) {
       load('css', urls, callback, obj, scope);
     },
 
+    /**
+     * Requests the specified JavaScript URL or URLs and executes the specified
+     * callback (if any) when they have finished loading. If an array of URLs is
+     * specified and the browser supports it, the scripts will be loaded in
+     * parallel and the callback will be executed after all scripts have
+     * finished loading.
+     *
+     * Currently, only Firefox and Opera support parallel loading of scripts
+     * while preserving execution order. In browsers other than Firefox and
+     * Opera, scripts will be queued and loaded one at a time to ensure correct
+     * execution order.
+     *
+     * @method js
+     * @param {String|Array} urls JS URL or array of JS URLs to load
+     * @param {Function} callback (optional) callback function to execute when
+     *   the specified scripts are loaded
+     * @param {Object} obj (optional) object to pass to the callback function
+     * @param {Object} scope (optional) if provided, the callback function will
+     *   be executed in this object's scope
+     * @static
+     */
     js: function (urls, callback, obj, scope) {
       load('js', urls, callback, obj, scope);
     }
+
   };
 }();
