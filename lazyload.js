@@ -7,7 +7,8 @@
  * 4 (including iPhone), Chrome, and Opera 9 and 10. Other browsers may or may
  * not work and are not officially supported.
  *
- * Visit http://github.com/rgrove/lazyload/ for more info.
+ * Visit http://github.com/rgrove/lazyload/ or
+ * http://wonko.com/post/lazyload-200-released for more info.
  *
  * Copyright (c) 2009 Ryan Grove <ryan@wonko.com>
  * All rights reserved.

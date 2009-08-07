@@ -1,7 +1,7 @@
 LazyLoad Changelog
 ================================================================================
 
-Version 2.0.0 (?)
+Version 2.0.0 (2009-08-06)
   * Added support for CSS. Caveat: Gecko and WebKit don't support the onload
     event	for link nodes, so the CSS callback will fire almost immediately in
     those browsers.
