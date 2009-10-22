@@ -38,7 +38,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  * @module lazyload
- * @version 2.0.0
+ * @version 2.0.1.dev.20091021 (git)
  */
 
 /**
@@ -242,12 +242,16 @@ LazyLoad = function () {
 
       if (type === 'css') {
         node = createNode('link', {
-          href : url,
-          rel  : 'stylesheet',
-          type : 'text/css'
+          'class': 'lazyload',
+          href   : url,
+          rel    : 'stylesheet',
+          type   : 'text/css'
         });
       } else {
-        node = createNode('script', {src: url});
+        node = createNode('script', {
+            'class': 'lazyload',
+            src    : url
+        });
       }
 
       if (ua.ie) {
