@@ -1,6 +1,6 @@
 h1. LazyLoad
 
-LazyLoad is a tiny (only 1,541 bytes minified), dependency-free JavaScript library that makes it super easy to load external JavaScript and (new in this version) CSS files on demand. It's ideal for quickly and unobtrusively loading large external scripts and stylesheets either lazily after the rest of the page has finished loading or on demand as needed.
+LazyLoad is a tiny (only 1,541 bytes minified), dependency-free JavaScript library that makes it super easy to load external JavaScript and CSS files on demand. It's ideal for quickly and unobtrusively loading large external scripts and stylesheets either lazily after the rest of the page has finished loading or on demand as needed.
 
 In addition to CSS support, this version of LazyLoad also adds support for parallel loading of multiple resources in browsers that support it. To load multiple resources in parallel, simply pass an array of URLs in a single LazyLoad call.
 
@@ -51,4 +51,4 @@ h2. Caveats
 
 All browsers support parallel loading of CSS. However, only Firefox and Opera currently support parallel script loading while preserving execution order. To ensure that scripts are always executed in the correct order, LazyLoad will load all scripts sequentially in browsers other than Firefox and Opera. Hopefully other browsers will improve their parallel script loading behavior soon.
 
-Sadly, Firefox, Safari, and Google Chrome don't provide any indication when a CSS file has finished loading. In these browsers, CSS load callbacks will execute after a short delay, but there's no way to automatically guarantee that the CSS has finished loading before the callback is executed. Luckily, there's a fairly painless "manual workaround":http://wonko.com/post/how-to-prevent-yui-get-race-conditions that you can use to detect when CSS has finished loading, but it's not possible for LazyLoad to do it for you.
+Sadly, Firefox doesn't provide any indication when a CSS file has finished loading. In Firefox, CSS load callbacks will execute after a short delay, but there's no way to automatically guarantee that the CSS has finished loading before the callback is executed. Luckily, there's a fairly painless "manual workaround":http://wonko.com/post/how-to-prevent-yui-get-race-conditions that you can use to detect when CSS has finished loading, but it's not possible for LazyLoad to do it for you.

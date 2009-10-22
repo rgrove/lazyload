@@ -38,7 +38,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  * @module lazyload
- * @version 2.0.1.dev.20091021 (git)
+ * @version 2.0.1.dev (git)
  */
 
 /**
@@ -58,8 +58,15 @@ LazyLoad = function () {
   // Requests currently in progress, if any.
   pending = {},
 
+  // Number of times we've polled to check whether a pending stylesheet has
+  // finished loading in WebKit. If this gets too high, we're probably stalled.
+  pollCount = 0,
+
   // Queued requests.
   queue = {css: [], js: []},
+
+  // Reference to the browser's list of stylesheets.
+  styleSheets = d.styleSheets,
 
   // User agent information.
   ua;
@@ -105,6 +112,7 @@ LazyLoad = function () {
         urls     = p.urls;
 
     urls.shift();
+    pollCount = 0;
 
     // If this is the last of the pending URLs, execute the callback and
     // start the next request in the queue (if any).
@@ -190,7 +198,7 @@ LazyLoad = function () {
    * @private
    */
   function load(type, urls, callback, obj, scope) {
-    var i, len, node, p, url;
+    var i, len, node, p, pendingUrls, url;
 
     // Determine browser type and version.
     getUserAgent();
@@ -234,18 +242,18 @@ LazyLoad = function () {
       return;
     }
 
-    head = head || d.getElementsByTagName('head')[0];
-    urls = p.urls;
+    head        = head || d.getElementsByTagName('head')[0];
+    pendingUrls = p.urls;
 
-    for (i = 0, len = urls.length; i < len; ++i) {
-      url = urls[i];
+    for (i = 0, len = pendingUrls.length; i < len; ++i) {
+      url = pendingUrls[i];
 
       if (type === 'css') {
         node = createNode('link', {
           'class': 'lazyload',
           href   : url,
           rel    : 'stylesheet',
-          type   : 'text/css'
+          type   : 'text/css',
         });
       } else {
         node = createNode('script', {
@@ -264,14 +272,58 @@ LazyLoad = function () {
           }
         };
       } else if (type === 'css' && (ua.gecko || ua.webkit)) {
-        // Gecko and WebKit don't support the onload event on link nodes, so we
-        // just have to finish after a brief delay and hope for the best.
-        setTimeout(function () { finish(type); }, 50 * len);
+        // Gecko and WebKit don't support the onload event on link nodes. In
+        // WebKit, we can poll for changes to document.styleSheets to figure out
+        // when stylesheets have loaded, but in Gecko we just have to finish
+        // after a brief delay and hope for the best.
+        if (ua.webkit) {
+          p.urls[i] = node.href; // resolve relative URLs (or polling won't work)
+          poll();
+        } else {
+          setTimeout(function () { finish(type); }, 50 * len);
+        }
       } else {
         node.onload = node.onerror = function () { finish(type); };
       }
 
       head.appendChild(node);
+    }
+  }
+
+  /**
+   * Begins polling to determine when pending stylesheets have finished loading
+   * in WebKit. Polling stops when all pending stylesheets have loaded.
+   *
+   * @method poll
+   * @private
+   */
+  function poll() {
+    var css = pending.css;
+
+    if (!css) {
+      return;
+    }
+
+    // Look for a stylesheet matching the pending URL.
+    for (i = styleSheets.length - 1; i >= 0; --i) {
+      if (styleSheets[i].href === css.urls[0]) {
+        finish('css');
+        break;
+      }
+    }
+
+    pollCount += 1;
+
+    if (css) {
+      if (pollCount < 200) {
+        setTimeout(poll, 50);
+      } else {
+        // We've been polling for 10 seconds and nothing's happened, which may
+        // indicate that the stylesheet has been removed from the document
+        // before it had a chance to load. Stop polling and finish the pending
+        // request to prevent blocking further requests.
+        finish('css');
+      }
     }
   }
 
@@ -283,13 +335,13 @@ LazyLoad = function () {
      * specified, the stylesheets will be loaded in parallel and the callback
      * will be executed after all stylesheets have finished loading.
      *
-     * Currently, Firefox and WebKit don't provide any way to determine when a
-     * stylesheet has finished loading. In those browsers, the callback will be
+     * Currently, Firefox doesn't provide any way to reliably determine when a
+     * stylesheet has finished loading. In Firefox, the callback will be
      * executed after a brief delay. For information on a manual technique you
-     * can use to detect when CSS has actually finished loading in Firefox and
-     * WebKit, see http://wonko.com/post/how-to-prevent-yui-get-race-conditions
-     * (which applies to LazyLoad as well, despite being originally written in
-     * in reference to the YUI Get utility).
+     * can use to detect when CSS has actually finished loading in Firefox, see
+     * http://wonko.com/post/how-to-prevent-yui-get-race-conditions (which
+     * applies to LazyLoad as well, despite being originally written in in
+     * reference to the YUI Get utility).
      *
      * @method css
      * @param {String|Array} urls CSS URL or array of CSS URLs to load

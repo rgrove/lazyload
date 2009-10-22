@@ -62,7 +62,7 @@
       </fieldset>
     </form>
 
-    <script src="lazyload.js"></script>
+    <script src="../lazyload.js"></script>
     <script type="text/javascript">
       var btnLoadCSS       = document.getElementById('btnLoadCSS'),
           btnLoadCSSSingle = document.getElementById('btnLoadCSSSingle'),
@@ -80,7 +80,7 @@
           cssInterval = null,
 
           css = [
-            'http://pieisgood.org/test/lazyload/css.php?num=1',
+            'http://pieisgood.org/test/lazyload/../lazyload/css.php?num=1',
             'http://pieisgood.org/test/lazyload/css.php?num=2',
             'http://pieisgood.org/test/lazyload/css.php?num=3',
             'http://pieisgood.org/test/lazyload/css.php?num=4',
@@ -110,11 +110,6 @@
         cssPollStop();
 
         var links = document.getElementsByTagName('link');
-
-        while (links.length) {
-          links[0].parentNode.removeChild(links[0]);
-          links = document.getElementsByTagName('link');
-        }
 
         cssInterval = setInterval(function () {
           for (i = 0; i < check.length; ++i) {

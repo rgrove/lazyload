@@ -2,6 +2,9 @@ LazyLoad Changelog
 ================================================================================
 
 Version 2.0.1 (git)
+  * Stylesheet load completion is now detected reliably in WebKit by polling
+    document.styleSheets for changes. Thanks to Jonathan Cook for suggesting
+    this solution.
   * Dynamically created script and link nodes are now given a "lazyload" class
     so they can be identified later.
 
