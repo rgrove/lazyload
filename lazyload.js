@@ -253,7 +253,7 @@ LazyLoad = function () {
           'class': 'lazyload',
           href   : url,
           rel    : 'stylesheet',
-          type   : 'text/css',
+          type   : 'text/css'
         });
       } else {
         node = createNode('script', {
@@ -305,7 +305,7 @@ LazyLoad = function () {
     }
 
     // Look for a stylesheet matching the pending URL.
-    for (i = styleSheets.length - 1; i >= 0; --i) {
+    for (i = styleSheets.length; --i;) {
       if (styleSheets[i].href === css.urls[0]) {
         finish('css');
         break;
