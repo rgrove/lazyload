@@ -298,7 +298,7 @@ LazyLoad = function () {
    * @private
    */
   function poll() {
-    var css = pending.css;
+    var css = pending.css, i;
 
     if (!css) {
       return;
