@@ -12,7 +12,7 @@
  * Visit http://github.com/rgrove/lazyload/ or
  * http://wonko.com/post/lazyload-200-released for more info.
  *
- * Copyright (c) 2009 Ryan Grove <ryan@wonko.com>
+ * Copyright (c) 2010 Ryan Grove <ryan@wonko.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
