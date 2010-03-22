@@ -122,7 +122,7 @@ var LazyLoad = (function () {
     // start the next request in the queue (if any).
     if (!urls.length) {
       if (callback) {
-        callback.call(p.scope || window, p.obj);
+        callback.call(p.context || window, p.obj);
       }
 
       pending[type] = null;
@@ -199,11 +199,11 @@ var LazyLoad = (function () {
    * @param {Function} callback (optional) callback function to execute when the
    *   resource is loaded
    * @param {Object} obj (optional) object to pass to the callback function
-   * @param {Object} scope (optional) if provided, the callback function will be
-   *   executed in this object's scope
+   * @param {Object} context (optional) if provided, the callback function will
+   *   be executed in this object's context
    * @private
    */
-  function load(type, urls, callback, obj, scope) {
+  function load(type, urls, callback, obj, context) {
     var _finish = function () { finish(type); },
         isCSS   = type === 'css',
         i, len, node, p, pendingUrls, url;
@@ -230,7 +230,7 @@ var LazyLoad = (function () {
           urls    : [].concat(urls), // concat ensures copy by value
           callback: callback,
           obj     : obj,
-          scope   : scope
+          context : context
         });
       } else {
         for (i = 0, len = urls.length; i < len; ++i) {
@@ -238,7 +238,7 @@ var LazyLoad = (function () {
             urls    : [urls[i]],
             callback: i === len - 1 ? callback : null, // callback is only added to the last URL
             obj     : obj,
-            scope   : scope
+            context : context
           });
         }
       }
@@ -356,12 +356,12 @@ var LazyLoad = (function () {
      * @param {Function} callback (optional) callback function to execute when
      *   the specified stylesheets are loaded
      * @param {Object} obj (optional) object to pass to the callback function
-     * @param {Object} scope (optional) if provided, the callback function will
-     *   be executed in this object's scope
+     * @param {Object} context (optional) if provided, the callback function
+     *   will be executed in this object's context
      * @static
      */
-    css: function (urls, callback, obj, scope) {
-      load('css', urls, callback, obj, scope);
+    css: function (urls, callback, obj, context) {
+      load('css', urls, callback, obj, context);
     },
 
     /**
@@ -381,12 +381,12 @@ var LazyLoad = (function () {
      * @param {Function} callback (optional) callback function to execute when
      *   the specified scripts are loaded
      * @param {Object} obj (optional) object to pass to the callback function
-     * @param {Object} scope (optional) if provided, the callback function will
-     *   be executed in this object's scope
+     * @param {Object} context (optional) if provided, the callback function
+     *   will be executed in this object's context
      * @static
      */
-    js: function (urls, callback, obj, scope) {
-      load('js', urls, callback, obj, scope);
+    js: function (urls, callback, obj, context) {
+      load('js', urls, callback, obj, context);
     }
 
   };
