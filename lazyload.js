@@ -1,3 +1,5 @@
+/*jslint browser: true, eqeqeq: true, bitwise: true, newcap: true, immed: true */
+
 /**
  * LazyLoad makes it easy and painless to lazily load one or more external
  * JavaScript or CSS files on demand either during or after the rendering of
@@ -45,11 +47,11 @@
  * @class LazyLoad
  * @static
  */
-LazyLoad = function () {
+var LazyLoad = (function () {
 
   // -- Private Variables ------------------------------------------------------
 
-  // Shorthand reference to the browser's document object.
+  // Reference to the browser's document object.
   var d = document,
 
   // Reference to the <head> element.
@@ -106,7 +108,9 @@ LazyLoad = function () {
   function finish(type) {
     var p = pending[type];
 
-    if (!p) { return; }
+    if (!p) {
+      return;
+    }
 
     var callback = p.callback,
         urls     = p.urls;
@@ -138,7 +142,9 @@ LazyLoad = function () {
    */
   function getUserAgent() {
     // No need to run again if ua is already populated.
-    if (ua) { return; }
+    if (ua) {
+      return;
+    }
 
     var nua = navigator.userAgent,
         pF  = parseFloat,
@@ -168,7 +174,7 @@ LazyLoad = function () {
         if (m && m[1]) {
           ua.gecko = pF(m[1]);
         }
-      } else if (m = nua.match(/Opera\/(\S*)/)) {
+      } else if (m = nua.match(/Opera\/(\S*)/)) { // assignment
         ua.opera = pF(m[1]);
       }
     }
@@ -198,7 +204,9 @@ LazyLoad = function () {
    * @private
    */
   function load(type, urls, callback, obj, scope) {
-    var i, len, node, p, pendingUrls, url;
+    var _finish = function () { finish(type); },
+        isCSS   = type === 'css',
+        i, len, node, p, pendingUrls, url;
 
     // Determine browser type and version.
     getUserAgent();
@@ -217,7 +225,7 @@ LazyLoad = function () {
       // All browsers respect CSS specificity based on the order of the link
       // elements in the DOM, regardless of the order in which the stylesheets
       // are actually downloaded.
-      if (type === 'css' || ua.gecko || ua.opera) {
+      if (isCSS || ua.gecko || ua.opera) {
         queue[type].push({
           urls    : [].concat(urls), // concat ensures copy by value
           callback: callback,
@@ -248,7 +256,7 @@ LazyLoad = function () {
     for (i = 0, len = pendingUrls.length; i < len; ++i) {
       url = pendingUrls[i];
 
-      if (type === 'css') {
+      if (isCSS) {
         node = createNode('link', {
           'class': 'lazyload',
           href   : url,
@@ -257,8 +265,8 @@ LazyLoad = function () {
         });
       } else {
         node = createNode('script', {
-            'class': 'lazyload',
-            src    : url
+          'class': 'lazyload',
+          src    : url
         });
       }
 
@@ -268,10 +276,10 @@ LazyLoad = function () {
 
           if (readyState === 'loaded' || readyState === 'complete') {
             this.onreadystatechange = null;
-            finish(type);
+            _finish();
           }
         };
-      } else if (type === 'css' && (ua.gecko || ua.webkit)) {
+      } else if (isCSS && (ua.gecko || ua.webkit)) {
         // Gecko and WebKit don't support the onload event on link nodes. In
         // WebKit, we can poll for changes to document.styleSheets to figure out
         // when stylesheets have loaded, but in Gecko we just have to finish
@@ -280,10 +288,10 @@ LazyLoad = function () {
           p.urls[i] = node.href; // resolve relative URLs (or polling won't work)
           poll();
         } else {
-          setTimeout(function () { finish(type); }, 50 * len);
+          setTimeout(_finish, 50 * len);
         }
       } else {
-        node.onload = node.onerror = function () { finish(type); };
+        node.onload = node.onerror = _finish;
       }
 
       head.appendChild(node);
@@ -382,4 +390,4 @@ LazyLoad = function () {
     }
 
   };
-}();
+}());
