@@ -250,7 +250,7 @@ var LazyLoad = (function () {
       return;
     }
 
-    head        = head || d.getElementsByTagName('head')[0];
+    head        = head || d.head || d.getElementsByTagName('head')[0];
     pendingUrls = p.urls;
 
     for (i = 0, len = pendingUrls.length; i < len; ++i) {
