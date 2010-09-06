@@ -104,14 +104,16 @@ var LazyLoad = (function () {
    * @private
    */
   function finish(type) {
-    var p = pending[type];
+    var p = pending[type],
+        callback,
+        urls;
 
     if (!p) {
       return;
     }
 
-    var callback = p.callback,
-        urls     = p.urls;
+    callback = p.callback;
+    urls     = p.urls;
 
     urls.shift();
     pollCount = 0;
