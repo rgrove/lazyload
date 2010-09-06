@@ -5,9 +5,9 @@
  * JavaScript or CSS files on demand either during or after the rendering of
  * a web page.
  *
- * Supported browsers include Firefox 2, Firefox 3, IE 6 through 8, Safari 3 and
- * 4 (including iPhone), Chrome, and Opera 9 and 10. Other browsers may or may
- * not work and are not officially supported.
+ * Supported browsers include Firefox 2+, IE6+, Safari 3+ (including Mobile
+ * Safari), Google Chrome, and Opera 9+. Other browsers may or may not work and
+ * are not officially supported.
  *
  * Visit http://github.com/rgrove/lazyload/ or
  * http://wonko.com/post/lazyload-200-released for more info.
@@ -40,13 +40,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  * @module lazyload
+ * @class LazyLoad
+ * @static
  * @version 2.0.1.dev (git)
  */
 
-/**
- * @class LazyLoad
- * @static
- */
 var LazyLoad = (function () {
 
   // -- Private Variables ------------------------------------------------------
