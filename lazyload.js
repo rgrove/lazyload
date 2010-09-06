@@ -258,6 +258,7 @@ var LazyLoad = (function () {
 
       if (isCSS) {
         node = createNode('link', {
+          charset: 'utf-8',
           'class': 'lazyload',
           href   : url,
           rel    : 'stylesheet',
@@ -265,6 +266,7 @@ var LazyLoad = (function () {
         });
       } else {
         node = createNode('script', {
+          charset: 'utf-8',
           'class': 'lazyload',
           src    : url
         });
