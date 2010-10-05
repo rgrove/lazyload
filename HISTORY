@@ -2,6 +2,10 @@ LazyLoad Changelog
 ================================================================================
 
 Version 2.0.1 (git)
+  * Scripts are no longer loaded in parallel by default in Firefox 4+ (Gecko
+    2+), since Gecko has intentionally removed support for preserving the
+    execution order of dynamically-inserted scripts. See
+    https://bugzilla.mozilla.org/show_bug.cgi?id=591981
   * Stylesheet load completion is now detected reliably in WebKit by polling
     document.styleSheets for changes. Thanks to Jonathan Cook for suggesting
     this solution.

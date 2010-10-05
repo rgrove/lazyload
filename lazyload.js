@@ -45,7 +45,7 @@
  * @version 2.0.1.dev (git)
  */
 
-var LazyLoad = (function () {
+LazyLoad = (function () {
 
   // -- Private Variables ------------------------------------------------------
 
@@ -188,10 +188,10 @@ var LazyLoad = (function () {
    *
    * When an array of resource URLs is specified, those URLs will be loaded in
    * parallel if it is possible to do so while preserving execution order. All
-   * browsers support parallel loading of CSS, but only Firefox and Opera
-   * support parallel loading of scripts. In browsers other than Firefox and
-   * Opera, scripts will be queued and loaded one at a time to ensure correct
-   * execution order.
+   * browsers support parallel loading of CSS, but only Firefox <4 and Opera
+   * support parallel loading of scripts. In Firefox 4+ and other browsers,
+   * scripts will be queued and loaded one at a time to ensure correct execution
+   * order.
    *
    * @method load
    * @param {String} type resource type ('css' or 'js')
@@ -218,14 +218,15 @@ var LazyLoad = (function () {
       // Create a request object for each URL. If multiple URLs are specified,
       // the callback will only be executed after all URLs have been loaded.
       //
-      // Sadly, Firefox and Opera are the only browsers capable of loading
+      // Sadly, Firefox <4 and Opera are the only browsers capable of loading
       // scripts in parallel while preserving execution order. In all other
-      // browsers, scripts must be loaded sequentially.
+      // browsers, scripts must be loaded sequentially. Firefox 4+ intentionally
+      // removed execution order preservation.
       //
       // All browsers respect CSS specificity based on the order of the link
       // elements in the DOM, regardless of the order in which the stylesheets
       // are actually downloaded.
-      if (isCSS || ua.gecko || ua.opera) {
+      if (isCSS || (ua.gecko && ua.gecko < 2) || ua.opera) {
         queue[type].push({
           urls    : [].concat(urls), // concat ensures copy by value
           callback: callback,
@@ -373,9 +374,9 @@ var LazyLoad = (function () {
      * parallel and the callback will be executed after all scripts have
      * finished loading.
      *
-     * Currently, only Firefox and Opera support parallel loading of scripts
-     * while preserving execution order. In browsers other than Firefox and
-     * Opera, scripts will be queued and loaded one at a time to ensure correct
+     * Currently, only Firefox <4 and Opera support parallel loading of scripts
+     * while preserving execution order. In Firefox 4+ and other browsers,
+     * scripts will be queued and loaded one at a time to ensure correct
      * execution order.
      *
      * @method js
