@@ -330,8 +330,10 @@ LazyLoad = (function () {
       return;
     }
 
+    i = styleSheets.length;
+
     // Look for a stylesheet matching the pending URL.
-    for (i = styleSheets.length; --i;) {
+    while (i && --i) {
       if (styleSheets[i].href === css.urls[0]) {
         finish('css');
         break;
