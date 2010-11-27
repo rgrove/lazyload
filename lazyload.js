@@ -1,4 +1,4 @@
-/*jslint browser: true, eqeqeq: true, bitwise: true, newcap: true, immed: true */
+/*jslint browser: true, eqeqeq: true, bitwise: true, newcap: true, immed: true, regexp: false */
 
 /**
  * LazyLoad makes it easy and painless to lazily load one or more external
@@ -52,6 +52,9 @@ LazyLoad = (function () {
   // Reference to the browser's document object.
   var d = document,
 
+  // User agent and feature test information.
+  env,
+
   // Reference to the <head> element.
   head,
 
@@ -66,10 +69,7 @@ LazyLoad = (function () {
   queue = {css: [], js: []},
 
   // Reference to the browser's list of stylesheets.
-  styleSheets = d.styleSheets,
-
-  // User agent information.
-  ua;
+  styleSheets = d.styleSheets;
 
   // -- Private Methods --------------------------------------------------------
 
@@ -134,15 +134,16 @@ LazyLoad = (function () {
   }
 
   /**
-   * Populates the <code>ua</code> variable with useragent information. Uses a
-   * paraphrased version of the YUI useragent detection code.
+   * Populates the <code>env</code> variable with user agent and feature test
+   * information. Uses a paraphrased version of the YUI user agent detection
+   * code.
    *
-   * @method getUserAgent
+   * @method getEnv
    * @private
    */
-  function getUserAgent() {
-    // No need to run again if ua is already populated.
-    if (ua) {
+  function getEnv() {
+    // No need to run again if already populated.
+    if (env) {
       return;
     }
 
@@ -150,7 +151,13 @@ LazyLoad = (function () {
         pF  = parseFloat,
         m;
 
-    ua = {
+    env = {
+      // True if this browser supports disabling async mode on dynamically
+      // created script nodes. This feature should show up in FF4. See
+      // http://wiki.whatwg.org/wiki/Dynamic_Script_Execution_Order
+      async: d.createElement('script').async === true,
+
+      // Browser version numbers sniffed from the user agent string.
       gecko : 0,
       ie    : 0,
       opera : 0,
@@ -160,22 +167,22 @@ LazyLoad = (function () {
     m = nua.match(/AppleWebKit\/(\S*)/);
 
     if (m && m[1]) {
-      ua.webkit = pF(m[1]);
+      env.webkit = pF(m[1]);
     } else {
       m = nua.match(/MSIE\s([^;]*)/);
 
       if (m && m[1]) {
-        ua.ie = pF(m[1]);
+        env.ie = pF(m[1]);
       } else if ((/Gecko\/(\S*)/).test(nua)) {
-        ua.gecko = 1;
+        env.gecko = 1;
 
         m = nua.match(/rv:([^\s\)]*)/);
 
         if (m && m[1]) {
-          ua.gecko = pF(m[1]);
+          env.gecko = pF(m[1]);
         }
-      } else if (m = nua.match(/Opera\/(\S*)/)) { // assignment
-        ua.opera = pF(m[1]);
+      } else if ((m = nua.match(/Opera\/(\S*)/))) { // assignment
+        env.opera = pF(m[1]);
       }
     }
   }
@@ -208,8 +215,7 @@ LazyLoad = (function () {
         isCSS   = type === 'css',
         i, len, node, p, pendingUrls, url;
 
-    // Determine browser type and version.
-    getUserAgent();
+    getEnv();
 
     if (urls) {
       // Cast urls to an Array.
@@ -220,13 +226,18 @@ LazyLoad = (function () {
       //
       // Sadly, Firefox <4 and Opera are the only browsers capable of loading
       // scripts in parallel while preserving execution order. In all other
-      // browsers, scripts must be loaded sequentially. Firefox 4+ intentionally
-      // removed execution order preservation.
+      // browsers, scripts must be loaded sequentially. Firefox 4 beta 7
+      // intentionally removed execution order preservation.
+      //
+      // There's a chance that FF4 final will add support for manually
+      // specifying whether execution order should be preserved. LazyLoad tests
+      // for that capability and will use it if it's present; otherwise, it will
+      // fall back to the slower, safer synchronous mode.
       //
       // All browsers respect CSS specificity based on the order of the link
       // elements in the DOM, regardless of the order in which the stylesheets
       // are actually downloaded.
-      if (isCSS || (ua.gecko && ua.gecko < 2) || ua.opera) {
+      if (isCSS || (env.gecko && (env.async || env.gecko < 2)) || env.opera) {
         queue[type].push({
           urls    : [].concat(urls), // concat ensures copy by value
           callback: callback,
@@ -271,9 +282,13 @@ LazyLoad = (function () {
           'class': 'lazyload',
           src    : url
         });
+
+        if (env.async) {
+          node.async = false;
+        }
       }
 
-      if (ua.ie) {
+      if (env.ie) {
         node.onreadystatechange = function () {
           var readyState = this.readyState;
 
@@ -282,12 +297,12 @@ LazyLoad = (function () {
             _finish();
           }
         };
-      } else if (isCSS && (ua.gecko || ua.webkit)) {
+      } else if (isCSS && (env.gecko || env.webkit)) {
         // Gecko and WebKit don't support the onload event on link nodes. In
         // WebKit, we can poll for changes to document.styleSheets to figure out
         // when stylesheets have loaded, but in Gecko we just have to finish
         // after a brief delay and hope for the best.
-        if (ua.webkit) {
+        if (env.webkit) {
           p.urls[i] = node.href; // resolve relative URLs (or polling won't work)
           poll();
         } else {

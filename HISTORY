@@ -2,16 +2,19 @@ LazyLoad Changelog
 ================================================================================
 
 Version 2.0.1 (git)
-  * Scripts are no longer loaded in parallel by default in Firefox 4+ (Gecko
-    2+), since Gecko has intentionally removed support for preserving the
-    execution order of dynamically-inserted scripts. See
-    https://bugzilla.mozilla.org/show_bug.cgi?id=591981
+  * Firefox 4.0 beta 7 removed support for preserving the execution order of
+    dynamically inserted scripts. A workaround (setting the script's "async"
+    property to false) has been proposed and may be implemented in future FF4
+    betas or in the final release. LazyLoad detects whether this feature is
+    supported; if it is, scripts will be loaded in parallel. Otherwise, scripts
+    will be loaded synchronously to preserve execution order. For more info,
+    see http://wiki.whatwg.org/wiki/Dynamic_Script_Execution_Order
   * Stylesheet load completion is now detected reliably in WebKit by polling
     document.styleSheets for changes. Thanks to Jonathan Cook for suggesting
     this solution.
   * Dynamically created script and link nodes are now given a "lazyload" class
     so they can be identified later.
-  * Charset for dynamically created script and link nodes is set to "utf-8".
+  * The charset for dynamically created script and link nodes is set to "utf-8".
 
 Version 2.0.0 (2009-08-06)
   * Added support for CSS. Caveat: Gecko and WebKit don't support the onload
