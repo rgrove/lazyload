@@ -108,27 +108,25 @@ LazyLoad = (function () {
         callback,
         urls;
 
-    if (!p) {
-      return;
-    }
+    if (p) {
+      callback = p.callback;
+      urls     = p.urls;
 
-    callback = p.callback;
-    urls     = p.urls;
+      urls.shift();
+      pollCount = 0;
 
-    urls.shift();
-    pollCount = 0;
+      // If this is the last of the pending URLs, execute the callback and
+      // start the next request in the queue (if any).
+      if (!urls.length) {
+        if (callback) {
+          callback.call(p.context, p.obj);
+        }
 
-    // If this is the last of the pending URLs, execute the callback and
-    // start the next request in the queue (if any).
-    if (!urls.length) {
-      if (callback) {
-        callback.call(p.context || window, p.obj);
-      }
+        pending[type] = null;
 
-      pending[type] = null;
-
-      if (queue[type].length) {
-        load(type);
+        if (queue[type].length) {
+          load(type);
+        }
       }
     }
   }
@@ -219,7 +217,8 @@ LazyLoad = (function () {
 
     if (urls) {
       // Cast urls to an Array.
-      urls = urls.constructor === Array ? urls : [urls];
+      urls = Object.prototype.toString.call(urls) === '[object Array]' ?
+          urls : [urls];
 
       // Create a request object for each URL. If multiple URLs are specified,
       // the callback will only be executed after all URLs have been loaded.
