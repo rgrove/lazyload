@@ -1,49 +1,49 @@
 /*jslint browser: true, eqeqeq: true, bitwise: true, newcap: true, immed: true, regexp: false */
 
 /**
- * LazyLoad makes it easy and painless to lazily load one or more external
- * JavaScript or CSS files on demand either during or after the rendering of
- * a web page.
- *
- * Supported browsers include Firefox 2+, IE6+, Safari 3+ (including Mobile
- * Safari), Google Chrome, and Opera 9+. Other browsers may or may not work and
- * are not officially supported.
- *
- * Visit http://github.com/rgrove/lazyload/ or
- * http://wonko.com/post/lazyload-200-released for more info.
- *
- * Copyright (c) 2011 Ryan Grove <ryan@wonko.com>
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *   * Redistributions of source code must retain the above copyright notice,
- *     this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above copyright notice,
- *     this list of conditions and the following disclaimer in the documentation
- *     and/or other materials provided with the distribution.
- *   * Neither the name of this project nor the names of its contributors may be
- *     used to endorse or promote products derived from this software without
- *     specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- *
- * @module lazyload
- * @class LazyLoad
- * @static
- * @version 2.0.1.dev (git)
- */
+LazyLoad makes it easy and painless to lazily load one or more external
+JavaScript or CSS files on demand either during or after the rendering of a web
+page.
+
+Supported browsers include Firefox 2+, IE6+, Safari 3+ (including Mobile
+Safari), Google Chrome, and Opera 9+. Other browsers may or may not work and
+are not officially supported.
+
+Visit http://github.com/rgrove/lazyload/ or
+http://wonko.com/post/lazyload-200-released for more info.
+
+Copyright (c) 2011 Ryan Grove <ryan@wonko.com>
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+  * Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+  * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+  * Neither the name of this project nor the names of its contributors may be
+    used to endorse or promote products derived from this software without
+    specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+
+@module lazyload
+@class LazyLoad
+@static
+@version 2.0.1.dev (git)
+*/
 
 LazyLoad = (function (win, doc) {
   // -- Private Variables ------------------------------------------------------
@@ -70,14 +70,14 @@ LazyLoad = (function (win, doc) {
   // -- Private Methods --------------------------------------------------------
 
   /**
-   * Creates and returns an HTML element with the specified name and attributes.
-   *
-   * @method createNode
-   * @param {String} name element name
-   * @param {Object} attrs name/value mapping of element attributes
-   * @return {HTMLElement}
-   * @private
-   */
+  Creates and returns an HTML element with the specified name and attributes.
+
+  @method createNode
+  @param {String} name element name
+  @param {Object} attrs name/value mapping of element attributes
+  @return {HTMLElement}
+  @private
+  */
   function createNode(name, attrs) {
     var node = doc.createElement(name), attr;
 
@@ -91,14 +91,14 @@ LazyLoad = (function (win, doc) {
   }
 
   /**
-   * Called when the current pending resource of the specified type has finished
-   * loading. Executes the associated callback (if any) and loads the next
-   * resource in the queue.
-   *
-   * @method finish
-   * @param {String} type resource type ('css' or 'js')
-   * @private
-   */
+  Called when the current pending resource of the specified type has finished
+  loading. Executes the associated callback (if any) and loads the next
+  resource in the queue.
+
+  @method finish
+  @param {String} type resource type ('css' or 'js')
+  @private
+  */
   function finish(type) {
     var p = pending[type],
         callback,
@@ -128,12 +128,12 @@ LazyLoad = (function (win, doc) {
   }
 
   /**
-   * Populates the <code>env</code> variable with user agent and feature test
-   * information.
-   *
-   * @method getEnv
-   * @private
-   */
+  Populates the <code>env</code> variable with user agent and feature test
+  information.
+
+  @method getEnv
+  @private
+  */
   function getEnv() {
     // No need to run again if already populated.
     if (env) { return; }
@@ -155,27 +155,27 @@ LazyLoad = (function (win, doc) {
   }
 
   /**
-   * Loads the specified resources, or the next resource of the specified type
-   * in the queue if no resources are specified. If a resource of the specified
-   * type is already being loaded, the new request will be queued until the
-   * first request has been finished.
-   *
-   * When an array of resource URLs is specified, those URLs will be loaded in
-   * parallel if it is possible to do so while preserving execution order. All
-   * browsers support parallel loading of CSS, but only Firefox and Opera
-   * support parallel loading of scripts. In other browsers, scripts will be
-   * queued and loaded one at a time to ensure correct execution order.
-   *
-   * @method load
-   * @param {String} type resource type ('css' or 'js')
-   * @param {String|Array} urls (optional) URL or array of URLs to load
-   * @param {Function} callback (optional) callback function to execute when the
-   *   resource is loaded
-   * @param {Object} obj (optional) object to pass to the callback function
-   * @param {Object} context (optional) if provided, the callback function will
-   *   be executed in this object's context
-   * @private
-   */
+  Loads the specified resources, or the next resource of the specified type
+  in the queue if no resources are specified. If a resource of the specified
+  type is already being loaded, the new request will be queued until the
+  first request has been finished.
+
+  When an array of resource URLs is specified, those URLs will be loaded in
+  parallel if it is possible to do so while preserving execution order. All
+  browsers support parallel loading of CSS, but only Firefox and Opera
+  support parallel loading of scripts. In other browsers, scripts will be
+  queued and loaded one at a time to ensure correct execution order.
+
+  @method load
+  @param {String} type resource type ('css' or 'js')
+  @param {String|Array} urls (optional) URL or array of URLs to load
+  @param {Function} callback (optional) callback function to execute when the
+    resource is loaded
+  @param {Object} obj (optional) object to pass to the callback function
+  @param {Object} context (optional) if provided, the callback function will
+    be executed in this object's context
+  @private
+  */
   function load(type, urls, callback, obj, context) {
     var _finish = function () { finish(type); },
         isCSS   = type === 'css',
@@ -194,7 +194,7 @@ LazyLoad = (function (win, doc) {
       //
       // Sadly, Firefox and Opera are the only browsers capable of loading
       // scripts in parallel while preserving execution order. In all other
-      // browsers, scripts must be loaded sequentially. 
+      // browsers, scripts must be loaded sequentially.
       //
       // All browsers respect CSS specificity based on the order of the link
       // elements in the DOM, regardless of the order in which the stylesheets
@@ -279,12 +279,12 @@ LazyLoad = (function (win, doc) {
   }
 
   /**
-   * Begins polling to determine when pending stylesheets have finished loading
-   * in WebKit. Polling stops when all pending stylesheets have loaded.
-   *
-   * @method poll
-   * @private
-   */
+  Begins polling to determine when pending stylesheets have finished loading
+  in WebKit. Polling stops when all pending stylesheets have loaded.
+
+  @method poll
+  @private
+  */
   function poll() {
     var css = pending.css, i;
 
@@ -320,52 +320,52 @@ LazyLoad = (function (win, doc) {
   return {
 
     /**
-     * Requests the specified CSS URL or URLs and executes the specified
-     * callback (if any) when they have finished loading. If an array of URLs is
-     * specified, the stylesheets will be loaded in parallel and the callback
-     * will be executed after all stylesheets have finished loading.
-     *
-     * Currently, Firefox doesn't provide any way to reliably determine when a
-     * stylesheet has finished loading. In Firefox, the callback will be
-     * executed after a brief delay. For information on a manual technique you
-     * can use to detect when CSS has actually finished loading in Firefox, see
-     * http://wonko.com/post/how-to-prevent-yui-get-race-conditions (which
-     * applies to LazyLoad as well, despite being originally written in in
-     * reference to the YUI Get utility).
-     *
-     * @method css
-     * @param {String|Array} urls CSS URL or array of CSS URLs to load
-     * @param {Function} callback (optional) callback function to execute when
-     *   the specified stylesheets are loaded
-     * @param {Object} obj (optional) object to pass to the callback function
-     * @param {Object} context (optional) if provided, the callback function
-     *   will be executed in this object's context
-     * @static
-     */
+    Requests the specified CSS URL or URLs and executes the specified
+    callback (if any) when they have finished loading. If an array of URLs is
+    specified, the stylesheets will be loaded in parallel and the callback
+    will be executed after all stylesheets have finished loading.
+
+    Currently, Firefox doesn't provide any way to reliably determine when a
+    stylesheet has finished loading. In Firefox, the callback will be
+    executed after a brief delay. For information on a manual technique you
+    can use to detect when CSS has actually finished loading in Firefox, see
+    http://wonko.com/post/how-to-prevent-yui-get-race-conditions (which
+    applies to LazyLoad as well, despite being originally written in in
+    reference to the YUI Get utility).
+
+    @method css
+    @param {String|Array} urls CSS URL or array of CSS URLs to load
+    @param {Function} callback (optional) callback function to execute when
+      the specified stylesheets are loaded
+    @param {Object} obj (optional) object to pass to the callback function
+    @param {Object} context (optional) if provided, the callback function
+      will be executed in this object's context
+    @static
+    */
     css: function (urls, callback, obj, context) {
       load('css', urls, callback, obj, context);
     },
 
     /**
-     * Requests the specified JavaScript URL or URLs and executes the specified
-     * callback (if any) when they have finished loading. If an array of URLs is
-     * specified and the browser supports it, the scripts will be loaded in
-     * parallel and the callback will be executed after all scripts have
-     * finished loading.
-     *
-     * Currently, only Firefox and Opera support parallel loading of scripts
-     * while preserving execution order. In other browsers, scripts will be
-     * queued and loaded one at a time to ensure correct execution order.
-     *
-     * @method js
-     * @param {String|Array} urls JS URL or array of JS URLs to load
-     * @param {Function} callback (optional) callback function to execute when
-     *   the specified scripts are loaded
-     * @param {Object} obj (optional) object to pass to the callback function
-     * @param {Object} context (optional) if provided, the callback function
-     *   will be executed in this object's context
-     * @static
-     */
+    Requests the specified JavaScript URL or URLs and executes the specified
+    callback (if any) when they have finished loading. If an array of URLs is
+    specified and the browser supports it, the scripts will be loaded in
+    parallel and the callback will be executed after all scripts have
+    finished loading.
+
+    Currently, only Firefox and Opera support parallel loading of scripts while
+    preserving execution order. In other browsers, scripts will be
+    queued and loaded one at a time to ensure correct execution order.
+
+    @method js
+    @param {String|Array} urls JS URL or array of JS URLs to load
+    @param {Function} callback (optional) callback function to execute when
+      the specified scripts are loaded
+    @param {Object} obj (optional) object to pass to the callback function
+    @param {Object} context (optional) if provided, the callback function
+      will be executed in this object's context
+    @static
+    */
     js: function (urls, callback, obj, context) {
       load('js', urls, callback, obj, context);
     }
