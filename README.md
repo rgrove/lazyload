@@ -1,7 +1,7 @@
 LazyLoad
 ========
 
-LazyLoad is a tiny (only 998 bytes minified and gzipped), dependency-free
+LazyLoad is a tiny (only 904 bytes minified and gzipped), dependency-free
 JavaScript library that makes it super easy to load external JavaScript and CSS
 files on demand. It's ideal for quickly and unobtrusively loading large external
 scripts and stylesheets either lazily after the rest of the page has finished

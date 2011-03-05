@@ -45,17 +45,13 @@
  * @version 2.0.1.dev (git)
  */
 
-LazyLoad = (function () {
-
+LazyLoad = (function (win, doc) {
   // -- Private Variables ------------------------------------------------------
 
-  // Reference to the browser's document object.
-  var d = document,
-
   // User agent and feature test information.
-  env,
+  var env,
 
-  // Reference to the <head> element.
+  // Reference to the <head> element (populated lazily).
   head,
 
   // Requests currently in progress, if any.
@@ -69,7 +65,7 @@ LazyLoad = (function () {
   queue = {css: [], js: []},
 
   // Reference to the browser's list of stylesheets.
-  styleSheets = d.styleSheets;
+  styleSheets = doc.styleSheets;
 
   // -- Private Methods --------------------------------------------------------
 
@@ -83,7 +79,7 @@ LazyLoad = (function () {
    * @private
    */
   function createNode(name, attrs) {
-    var node = d.createElement(name), attr;
+    var node = doc.createElement(name), attr;
 
     for (attr in attrs) {
       if (attrs.hasOwnProperty(attr)) {
@@ -133,56 +129,29 @@ LazyLoad = (function () {
 
   /**
    * Populates the <code>env</code> variable with user agent and feature test
-   * information. Uses a paraphrased version of the YUI user agent detection
-   * code.
+   * information.
    *
    * @method getEnv
    * @private
    */
   function getEnv() {
     // No need to run again if already populated.
-    if (env) {
-      return;
-    }
+    if (env) { return; }
 
-    var nua = navigator.userAgent,
-        pF  = parseFloat,
-        m;
+    var ua = navigator.userAgent;
 
     env = {
       // True if this browser supports disabling async mode on dynamically
-      // created script nodes. This feature should show up in FF4. See
+      // created script nodes. See
       // http://wiki.whatwg.org/wiki/Dynamic_Script_Execution_Order
-      async: d.createElement('script').async === true,
-
-      // Browser version numbers sniffed from the user agent string.
-      gecko : 0,
-      ie    : 0,
-      opera : 0,
-      webkit: 0
+      async: doc.createElement('script').async === true
     };
 
-    m = nua.match(/AppleWebKit\/(\S*)/);
-
-    if (m && m[1]) {
-      env.webkit = pF(m[1]);
-    } else {
-      m = nua.match(/MSIE\s([^;]*)/);
-
-      if (m && m[1]) {
-        env.ie = pF(m[1]);
-      } else if ((/Gecko\/(\S*)/).test(nua)) {
-        env.gecko = 1;
-
-        m = nua.match(/rv:([^\s\)]*)/);
-
-        if (m && m[1]) {
-          env.gecko = pF(m[1]);
-        }
-      } else if ((m = nua.match(/Opera\/(\S*)/))) { // assignment
-        env.opera = pF(m[1]);
-      }
-    }
+    (env.webkit = /AppleWebKit\//.test(ua))
+      || (env.ie = /MSIE/.test(ua))
+      || (env.opera = /Opera/.test(ua))
+      || (env.gecko = /Gecko\//.test(ua))
+      || (env.unknown = true);
   }
 
   /**
@@ -193,10 +162,9 @@ LazyLoad = (function () {
    *
    * When an array of resource URLs is specified, those URLs will be loaded in
    * parallel if it is possible to do so while preserving execution order. All
-   * browsers support parallel loading of CSS, but only Firefox <4 and Opera
-   * support parallel loading of scripts. In Firefox 4+ and other browsers,
-   * scripts will be queued and loaded one at a time to ensure correct execution
-   * order.
+   * browsers support parallel loading of CSS, but only Firefox and Opera
+   * support parallel loading of scripts. In other browsers, scripts will be
+   * queued and loaded one at a time to ensure correct execution order.
    *
    * @method load
    * @param {String} type resource type ('css' or 'js')
@@ -216,34 +184,31 @@ LazyLoad = (function () {
     getEnv();
 
     if (urls) {
-      // Cast urls to an Array.
-      urls = Object.prototype.toString.call(urls) === '[object Array]' ?
-          urls : [urls];
+      // If urls is a string, wrap it in an array. Otherwise assume it's an
+      // array and create a copy of it so modifications won't be made to the
+      // original.
+      urls = typeof urls === 'string' ? [urls] : urls.concat();
 
       // Create a request object for each URL. If multiple URLs are specified,
       // the callback will only be executed after all URLs have been loaded.
       //
-      // Sadly, Firefox <4 and Opera are the only browsers capable of loading
+      // Sadly, Firefox and Opera are the only browsers capable of loading
       // scripts in parallel while preserving execution order. In all other
-      // browsers, scripts must be loaded sequentially. Firefox 4 beta 7
-      // intentionally removed execution order preservation.
-      //
-      // There's a chance that FF4 final will add support for manually
-      // specifying whether execution order should be preserved. LazyLoad tests
-      // for that capability and will use it if it's present; otherwise, it will
-      // fall back to the slower, safer synchronous mode.
+      // browsers, scripts must be loaded sequentially. 
       //
       // All browsers respect CSS specificity based on the order of the link
       // elements in the DOM, regardless of the order in which the stylesheets
       // are actually downloaded.
-      if (isCSS || (env.gecko && (env.async || env.gecko < 2)) || env.opera) {
+      if (isCSS || env.async || env.gecko || env.opera) {
+        // Load in parallel.
         queue[type].push({
-          urls    : [].concat(urls), // concat ensures copy by value
+          urls    : urls,
           callback: callback,
           obj     : obj,
           context : context
         });
       } else {
+        // Load sequentially.
         for (i = 0, len = urls.length; i < len; ++i) {
           queue[type].push({
             urls    : [urls[i]],
@@ -261,7 +226,7 @@ LazyLoad = (function () {
       return;
     }
 
-    head        = head || d.head || d.getElementsByTagName('head')[0];
+    head || (head = doc.head || doc.getElementsByTagName('head')[0]);
     pendingUrls = p.urls;
 
     for (i = 0, len = pendingUrls.length; i < len; ++i) {
@@ -282,9 +247,7 @@ LazyLoad = (function () {
           src    : url
         });
 
-        if (env.async) {
-          node.async = false;
-        }
+        node.async = false;
       }
 
       if (env.ie) {
@@ -390,10 +353,9 @@ LazyLoad = (function () {
      * parallel and the callback will be executed after all scripts have
      * finished loading.
      *
-     * Currently, only Firefox <4 and Opera support parallel loading of scripts
-     * while preserving execution order. In Firefox 4+ and other browsers,
-     * scripts will be queued and loaded one at a time to ensure correct
-     * execution order.
+     * Currently, only Firefox and Opera support parallel loading of scripts
+     * while preserving execution order. In other browsers, scripts will be
+     * queued and loaded one at a time to ensure correct execution order.
      *
      * @method js
      * @param {String|Array} urls JS URL or array of JS URLs to load
@@ -409,4 +371,4 @@ LazyLoad = (function () {
     }
 
   };
-}());
+})(this, this.document);
