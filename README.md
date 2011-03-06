@@ -1,7 +1,7 @@
 LazyLoad
 ========
 
-LazyLoad is a tiny (only 896 bytes minified and gzipped), dependency-free
+LazyLoad is a tiny (only 918 bytes minified and gzipped), dependency-free
 JavaScript utility that makes it super easy to load external JavaScript and CSS
 files on demand.
 
@@ -71,14 +71,6 @@ currently support parallel script loading while preserving execution order. To
 ensure that scripts are always executed in the correct order, LazyLoad will load
 all scripts sequentially in browsers other than Firefox and Opera. Hopefully
 other browsers will improve their parallel script loading behavior soon.
-
-Sadly, Firefox doesn't provide any indication when a CSS file has finished
-loading. In Firefox, CSS load callbacks will execute after a short delay, but
-there's no way to automatically guarantee that the CSS has finished loading
-before the callback is executed. Luckily, there's a fairly painless
-[manual workaround](http://wonko.com/post/how-to-prevent-yui-get-race-conditions)
-that you can use to detect when CSS has finished loading, but it's not possible
-for LazyLoad to do it for you.
 
 License
 -------

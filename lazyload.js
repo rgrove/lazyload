@@ -50,7 +50,7 @@ LazyLoad = (function (doc) {
   pending = {},
 
   // Number of times we've polled to check whether a pending stylesheet has
-  // finished loading in WebKit. If this gets too high, we're probably stalled.
+  // finished loading. If this gets too high, we're probably stalled.
   pollCount = 0,
 
   // Queued requests.
@@ -219,22 +219,17 @@ LazyLoad = (function (doc) {
       url = pendingUrls[i];
 
       if (isCSS) {
-        node = createNode('link', {
-          charset: 'utf-8',
-          'class': 'lazyload',
-          href   : url,
-          rel    : 'stylesheet',
-          type   : 'text/css'
-        });
+          node = env.gecko ? createNode('style') : createNode('link', {
+            href: url,
+            rel : 'stylesheet'
+          });
       } else {
-        node = createNode('script', {
-          charset: 'utf-8',
-          'class': 'lazyload',
-          src    : url
-        });
-
+        node = createNode('script', {src: url});
         node.async = false;
       }
+
+      node.className = 'lazyload';
+      node.setAttribute('charset', 'utf-8');
 
       if (env.ie && !isCSS) {
         node.onreadystatechange = function () {
@@ -244,15 +239,19 @@ LazyLoad = (function (doc) {
           }
         };
       } else if (isCSS && (env.gecko || env.webkit)) {
-        // Gecko and WebKit don't support the onload event on link nodes. In
-        // WebKit, we can poll for changes to document.styleSheets to figure out
-        // when stylesheets have loaded, but in Gecko we just have to finish
-        // after a brief delay and hope for the best.
+        // Gecko and WebKit don't support the onload event on link nodes.
         if (env.webkit) {
+          // In WebKit, we can poll for changes to document.styleSheets to
+          // figure out when stylesheets have loaded.
           p.urls[i] = node.href; // resolve relative URLs (or polling won't work)
-          poll();
+          pollWebKit();
         } else {
-          setTimeout(_finish, 50 * len);
+          // In Gecko, we can import the requested URL into a <style> node and
+          // poll for the existence of node.sheet.cssRules. Props to Zach
+          // Leatherman for calling my attention to this technique, and to Oleg
+          // Slobodskoi for an even earlier implementation.
+          node.innerHTML = '@import "' + url + '";';
+          pollGecko(node);
         }
       } else {
         node.onload = node.onerror = _finish;
@@ -263,13 +262,50 @@ LazyLoad = (function (doc) {
   }
 
   /**
-  Begins polling to determine when pending stylesheets have finished loading
-  in WebKit. Polling stops when all pending stylesheets have loaded.
+  Begins polling to determine when the specified stylesheet has finished loading
+  in Gecko. Polling stops when all pending stylesheets have loaded or after 10
+  seconds (to prevent stalls).
 
-  @method poll
+  Thanks to Zach Leatherman for calling my attention to the technique used here,
+  and to Oleg Slobodskoi for an even earlier implementation:
+  http://www.zachleat.com/web/2010/07/29/load-css-dynamically/
+
+  @method pollGecko
+  @param {HTMLElement} node Style node to poll.
   @private
   */
-  function poll() {
+  function pollGecko(node) {
+    try {
+      node.sheet.cssRules;
+    } catch (ex) {
+      // An exception means the stylesheet is still loading.
+      pollCount += 1;
+
+      if (pollCount < 200) {
+        setTimeout(function () { pollGecko(node); }, 50);
+      } else {
+        // We've been polling for 10 seconds and nothing's happened. Stop
+        // polling and finish the pending requests to avoid blocking further
+        // requests.
+        finish('css');
+      }
+
+      return;
+    }
+
+    // If we get here, the stylesheet has loaded.
+    finish('css');
+  }
+
+  /**
+  Begins polling to determine when pending stylesheets have finished loading
+  in WebKit. Polling stops when all pending stylesheets have loaded or after 10
+  seconds (to prevent stalls).
+
+  @method pollWebKit
+  @private
+  */
+  function pollWebKit() {
     var css = pending.css, i;
 
     if (css) {
@@ -287,7 +323,7 @@ LazyLoad = (function (doc) {
 
       if (css) {
         if (pollCount < 200) {
-          setTimeout(poll, 50);
+          setTimeout(pollWebKit, 50);
         } else {
           // We've been polling for 10 seconds and nothing's happened, which may
           // indicate that the stylesheet has been removed from the document
@@ -306,14 +342,6 @@ LazyLoad = (function (doc) {
     callback (if any) when they have finished loading. If an array of URLs is
     specified, the stylesheets will be loaded in parallel and the callback
     will be executed after all stylesheets have finished loading.
-
-    Currently, Firefox doesn't provide any way to reliably determine when a
-    stylesheet has finished loading. In Firefox, the callback will be
-    executed after a brief delay. For information on a manual technique you
-    can use to detect when CSS has actually finished loading in Firefox, see
-    http://wonko.com/post/how-to-prevent-yui-get-race-conditions (which
-    applies to LazyLoad as well, despite being originally written in in
-    reference to the YUI Get utility).
 
     @method css
     @param {String|Array} urls CSS URL or array of CSS URLs to load

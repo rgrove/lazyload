@@ -2,6 +2,10 @@ LazyLoad Changelog
 ================================================================================
 
 Version 2.0.2 (git)
+  * Added support for reliable detection of CSS load completion in Gecko
+    browsers based on a technique described by Zach Leatherman and implemented
+    previously by Oleg Slobodskoi. For more information on this technique, see
+    <http://www.zachleat.com/web/2010/07/29/load-css-dynamically/>.
   * Fixed a bug that could prevent CSS callbacks from being called in IE.
 
 Version 2.0.1 (2011-03-05)
