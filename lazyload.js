@@ -34,10 +34,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @module lazyload
 @class LazyLoad
 @static
-@version 2.0.1 (2011-03-05)
+@version 2.0.2.dev (git)
 */
 
-LazyLoad = (function (win, doc) {
+LazyLoad = (function (doc) {
   // -- Private Variables ------------------------------------------------------
 
   // User agent and feature test information.
@@ -106,15 +106,9 @@ LazyLoad = (function (win, doc) {
       // If this is the last of the pending URLs, execute the callback and
       // start the next request in the queue (if any).
       if (!urls.length) {
-        if (callback) {
-          callback.call(p.context, p.obj);
-        }
-
+        callback && callback.call(p.context, p.obj);
         pending[type] = null;
-
-        if (queue[type].length) {
-          load(type);
-        }
+        queue[type].length && load(type);
       }
     }
   }
@@ -244,10 +238,8 @@ LazyLoad = (function (win, doc) {
 
       if (env.ie && !isCSS) {
         node.onreadystatechange = function () {
-          var readyState = this.readyState;
-
-          if (readyState === 'loaded' || readyState === 'complete') {
-            this.onreadystatechange = null;
+          if (/loaded|complete/.test(node.readyState)) {
+            node.onreadystatechange = null;
             _finish();
           }
         };
@@ -280,31 +272,29 @@ LazyLoad = (function (win, doc) {
   function poll() {
     var css = pending.css, i;
 
-    if (!css) {
-      return;
-    }
-
-    i = styleSheets.length;
-
-    // Look for a stylesheet matching the pending URL.
-    while (i && --i) {
-      if (styleSheets[i].href === css.urls[0]) {
-        finish('css');
-        break;
-      }
-    }
-
-    pollCount += 1;
-
     if (css) {
-      if (pollCount < 200) {
-        setTimeout(poll, 50);
-      } else {
-        // We've been polling for 10 seconds and nothing's happened, which may
-        // indicate that the stylesheet has been removed from the document
-        // before it had a chance to load. Stop polling and finish the pending
-        // request to prevent blocking further requests.
-        finish('css');
+      i = styleSheets.length;
+
+      // Look for a stylesheet matching the pending URL.
+      while (i && --i) {
+        if (styleSheets[i].href === css.urls[0]) {
+          finish('css');
+          break;
+        }
+      }
+
+      pollCount += 1;
+
+      if (css) {
+        if (pollCount < 200) {
+          setTimeout(poll, 50);
+        } else {
+          // We've been polling for 10 seconds and nothing's happened, which may
+          // indicate that the stylesheet has been removed from the document
+          // before it had a chance to load. Stop polling and finish the pending
+          // request to prevent blocking further requests.
+          finish('css');
+        }
       }
     }
   }
@@ -363,4 +353,4 @@ LazyLoad = (function (win, doc) {
     }
 
   };
-})(this, this.document);
+})(this.document);
