@@ -9,8 +9,7 @@ Supported browsers include Firefox 2+, IE6+, Safari 3+ (including Mobile
 Safari), Google Chrome, and Opera 9+. Other browsers may or may not work and
 are not officially supported.
 
-Visit http://github.com/rgrove/lazyload/ or
-http://wonko.com/post/lazyload-200-released for more info.
+Visit https://github.com/rgrove/lazyload/ for more info.
 
 Copyright (c) 2011 Ryan Grove <ryan@wonko.com>
 All rights reserved.
@@ -35,7 +34,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @module lazyload
 @class LazyLoad
 @static
-@version 2.0.1.dev (git)
+@version 2.0.1 (2011-03-05)
 */
 
 LazyLoad = (function (win, doc) {

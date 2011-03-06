@@ -2,22 +2,24 @@ LazyLoad
 ========
 
 LazyLoad is a tiny (only 904 bytes minified and gzipped), dependency-free
-JavaScript library that makes it super easy to load external JavaScript and CSS
-files on demand. It's ideal for quickly and unobtrusively loading large external
-scripts and stylesheets either lazily after the rest of the page has finished
-loading or on demand as needed.
+JavaScript utility that makes it super easy to load external JavaScript and CSS
+files on demand.
 
-In addition to CSS support, this version of LazyLoad also adds support for
-parallel loading of multiple resources in browsers that support it. To load
-multiple resources in parallel, simply pass an array of URLs in a single
-LazyLoad call.
+Whenever possible, LazyLoad will automatically load resources in parallel while
+ensuring execution order when you specify an array of URLs to load. In browsers
+that don't preserve the execution order of asynchronously-loaded scripts,
+LazyLoad will safely load the scripts sequentially.
+
+Use LazyLoad when you need a small, fast, safe dynamic JS or CSS loader, but
+don't need the overhead of dependency management or other extra functionality
+that larger script loaders provide.
 
 Downloads
 ---------
 
-  * [lazyload.js](http://pieisgood.org/files/lazyload-2.0.0/lazyload.js) (full source)
-  * [lazyload-min.js](http://pieisgood.org/files/lazyload-2.0.0/lazyload-min.js) (minified source)
-  * Archive: [tgz](http://github.com/rgrove/lazyload/tarball/release-2.0.0) | [zip](http://github.com/rgrove/lazyload/zipball/release-2.0.0)
+  * [lazyload.js](https://github.com/rgrove/lazyload/raw/release-2.0.1/lazyload.js) (full source)
+  * [lazyload-min.js](https://github.com/rgrove/lazyload/raw/release-2.0.1/lazyload-min.js) (minified source)
+  * Archive: [tgz](https://github.com/rgrove/lazyload/tarball/release-2.0.1) | [zip](https://github.com/rgrove/lazyload/zipball/release-2.0.1)
 
 Usage
 -----

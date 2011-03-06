@@ -1,7 +1,7 @@
 LazyLoad Changelog
 ================================================================================
 
-Version 2.0.1 (git)
+Version 2.0.1 (2011-03-05)
   * Added support for async=false. This ensures that parallel script loading
     still works in Firefox 4 while preserving execution order. For more info,
     see <http://wiki.whatwg.org/wiki/Dynamic_Script_Execution_Order>.
