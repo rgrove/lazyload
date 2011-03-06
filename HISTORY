@@ -1,6 +1,9 @@
 LazyLoad Changelog
 ================================================================================
 
+Version 2.0.2 (git)
+  * Fixed a bug that could prevent CSS callbacks from being called in IE.
+
 Version 2.0.1 (2011-03-05)
   * Added support for async=false. This ensures that parallel script loading
     still works in Firefox 4 while preserving execution order. For more info,

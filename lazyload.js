@@ -242,7 +242,7 @@ LazyLoad = (function (win, doc) {
         node.async = false;
       }
 
-      if (env.ie) {
+      if (env.ie && !isCSS) {
         node.onreadystatechange = function () {
           var readyState = this.readyState;
 
