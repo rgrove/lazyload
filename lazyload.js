@@ -248,8 +248,7 @@ LazyLoad = (function (doc) {
         } else {
           // In Gecko, we can import the requested URL into a <style> node and
           // poll for the existence of node.sheet.cssRules. Props to Zach
-          // Leatherman for calling my attention to this technique, and to Oleg
-          // Slobodskoi for an even earlier implementation.
+          // Leatherman for calling my attention to this technique.
           node.innerHTML = '@import "' + url + '";';
           pollGecko(node);
         }
@@ -266,8 +265,9 @@ LazyLoad = (function (doc) {
   in Gecko. Polling stops when all pending stylesheets have loaded or after 10
   seconds (to prevent stalls).
 
-  Thanks to Zach Leatherman for calling my attention to the technique used here,
-  and to Oleg Slobodskoi for an even earlier implementation:
+  Thanks to Zach Leatherman for calling my attention to the @import-based
+  cross-domain technique used here, and to Oleg Slobodskoi for an earlier
+  same-domain implementation. See Zach's blog for more details:
   http://www.zachleat.com/web/2010/07/29/load-css-dynamically/
 
   @method pollGecko
