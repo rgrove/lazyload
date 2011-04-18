@@ -34,7 +34,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @module lazyload
 @class LazyLoad
 @static
-@version 2.0.2.dev (git)
+@version 2.0.2 (2011-04-17)
 */
 
 LazyLoad = (function (doc) {

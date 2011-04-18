@@ -1,7 +1,7 @@
 LazyLoad
 ========
 
-LazyLoad is a tiny (only 918 bytes minified and gzipped), dependency-free
+LazyLoad is a tiny (only 908 bytes minified and gzipped), dependency-free
 JavaScript utility that makes it super easy to load external JavaScript and CSS
 files on demand.
 
@@ -17,9 +17,9 @@ that larger script loaders provide.
 Downloads
 ---------
 
-  * [lazyload.js](https://github.com/rgrove/lazyload/raw/release-2.0.1/lazyload.js) (full source)
-  * [lazyload-min.js](https://github.com/rgrove/lazyload/raw/release-2.0.1/lazyload-min.js) (minified source)
-  * Archive: [tgz](https://github.com/rgrove/lazyload/tarball/release-2.0.1) | [zip](https://github.com/rgrove/lazyload/zipball/release-2.0.1)
+  * [lazyload.js](https://github.com/rgrove/lazyload/raw/release-2.0.2/lazyload.js) (full source)
+  * [lazyload-min.js](https://github.com/rgrove/lazyload/raw/release-2.0.2/lazyload-min.js) (minified source)
+  * Archive: [tgz](https://github.com/rgrove/lazyload/tarball/release-2.0.2) | [zip](https://github.com/rgrove/lazyload/zipball/release-2.0.2)
 
 Usage
 -----
@@ -54,11 +54,12 @@ Supported Browsers
 ------------------
 
   * Firefox 2+
-  * Google Chrome (all versions)
+  * Google Chrome
   * Internet Explorer 6+
   * Opera 9+
   * Safari 3+
-  * Mobile Safari (all versions)
+  * Mobile Safari
+  * Android
 
 Other browsers may work, but haven't been tested. It's a safe bet that anything
 based on a recent version of Gecko or WebKit will probably work.
