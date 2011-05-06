@@ -162,6 +162,7 @@ LazyLoad = (function (doc) {
   function load(type, urls, callback, obj, context) {
     var _finish = function () { finish(type); },
         isCSS   = type === 'css',
+        nodes   = [],
         i, len, node, p, pendingUrls, url;
 
     env || getEnv();
@@ -253,7 +254,11 @@ LazyLoad = (function (doc) {
         node.onload = node.onerror = _finish;
       }
 
-      head.appendChild(node);
+      nodes.push(node);
+    }
+
+    for (i = 0, len = nodes.length; i < len; ++i) {
+      head.appendChild(nodes[i]);
     }
   }
 

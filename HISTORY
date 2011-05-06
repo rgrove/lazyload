@@ -1,6 +1,12 @@
 LazyLoad Changelog
 ================================================================================
 
+Version 2.0.3 (git)
+  * Fixed a race condition in which a URL could be removed from the "pending"
+    queue if it finished loading before other URLs in the same batch had been
+    added to the queue, resulting in the queue's length changing unexpectedly
+    during iteration. [Klaas Neirinck]
+
 Version 2.0.2 (2011-04-17)
   * Added support for reliable detection of CSS load completion in Gecko
     browsers based on a technique described by Zach Leatherman at
