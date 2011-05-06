@@ -34,7 +34,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @module lazyload
 @class LazyLoad
 @static
-@version 2.0.2 (2011-04-17)
+@version 2.0.3 (git)
 */
 
 LazyLoad = (function (doc) {
@@ -121,9 +121,6 @@ LazyLoad = (function (doc) {
   @private
   */
   function getEnv() {
-    // No need to run again if already populated.
-    if (env) { return; }
-
     var ua = navigator.userAgent;
 
     env = {
@@ -167,7 +164,7 @@ LazyLoad = (function (doc) {
         isCSS   = type === 'css',
         i, len, node, p, pendingUrls, url;
 
-    getEnv();
+    env || getEnv();
 
     if (urls) {
       // If urls is a string, wrap it in an array. Otherwise assume it's an
