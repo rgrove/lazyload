@@ -1,15 +1,15 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
     <title>LazyLoad Test</title>
-    <style type="text/css">
+    <style>
       fieldset {
         border: 1px solid #afafaf;
         margin-bottom: 1em;
       }
 
       .log {
-        font: 10pt Consolas, Monaco, fixed;
+        font: 10pt Consolas, Menlo, Monaco, fixed;
         width: 100%;
       }
 
@@ -26,13 +26,14 @@
   <body>
     <h1>LazyLoad Test</h1>
 
-    <form action="" method="get">
+    <form>
       <fieldset>
         <legend>JavaScript</legend>
 
         <p>
-          <input type="button" id="btnLoadJS" value="Load JS (sequential calls)" />
-          <input type="button" id="btnLoadJSSingle" value="Load JS (single call)" />
+          <input type="button" id="btnLoadJS" value="Load JS (sequential calls)">
+          <input type="button" id="btnLoadJSSingle" value="Load JS (single call)">
+          <label><input type="checkbox" id="jsDelay" checked> Random delay</label>
         </p>
 
         <p>
@@ -44,8 +45,9 @@
         <legend>CSS</legend>
 
         <p>
-          <input type="button" id="btnLoadCSS" value="Load CSS (sequential calls)" />
-          <input type="button" id="btnLoadCSSSingle" value="Load CSS (single call)" />
+          <input type="button" id="btnLoadCSS" value="Load CSS (sequential calls)">
+          <input type="button" id="btnLoadCSSSingle" value="Load CSS (single call)">
+          <label><input type="checkbox" id="cssDelay" checked> Random delay</label>
         </p>
 
         <p>
@@ -62,13 +64,15 @@
       </fieldset>
     </form>
 
-    <script src="../lazyload.js"></script>
-    <script type="text/javascript">
+    <script src="lazyload.js"></script>
+    <script>
       var btnLoadCSS       = document.getElementById('btnLoadCSS'),
           btnLoadCSSSingle = document.getElementById('btnLoadCSSSingle'),
           btnLoadJS        = document.getElementById('btnLoadJS'),
           btnLoadJSSingle  = document.getElementById('btnLoadJSSingle'),
+          cssDelay         = document.getElementById('cssDelay'),
           cssLogEl         = document.getElementById('csslog'),
+          jsDelay          = document.getElementById('jsDelay'),
           jsLogEl          = document.getElementById('jslog'),
 
           n1 = document.getElementById('n1'),
@@ -78,14 +82,6 @@
           n5 = document.getElementById('n5'),
 
           cssInterval = null,
-
-          css = [
-            'http://pieisgood.org/test/lazyload/../lazyload/css.php?num=1',
-            'http://pieisgood.org/test/lazyload/css.php?num=2',
-            'http://pieisgood.org/test/lazyload/css.php?num=3',
-            'http://pieisgood.org/test/lazyload/css.php?num=4',
-            'http://pieisgood.org/test/lazyload/css.php?num=5'
-          ],
 
           js = [
             'http://pieisgood.org/test/lazyload/js.php?num=1',
@@ -133,6 +129,36 @@
         clearInterval(cssInterval);
       }
 
+      // Returns a delay between 0 and 5000ms if enabled.
+      function getCSSDelay() {
+          return cssDelay.checked ? Math.floor(Math.random() * 5001) : 0;
+      }
+
+      function getCSSUrls() {
+          return [
+            '/css?num=1&delay=' + getCSSDelay(),
+            '/css?num=2&delay=' + getCSSDelay(),
+            '/css?num=3&delay=' + getCSSDelay(),
+            '/css?num=4&delay=' + getCSSDelay(),
+            '/css?num=5&delay=' + getCSSDelay()
+          ];
+      }
+
+      // Returns a delay between 0 and 5000ms if enabled.
+      function getJSDelay() {
+          return jsDelay.checked ? Math.floor(Math.random() * 5001) : 0;
+      }
+
+      function getJSUrls() {
+          return [
+            '/js?num=1&delay=' + getJSDelay(),
+            '/js?num=2&delay=' + getJSDelay(),
+            '/js?num=3&delay=' + getJSDelay(),
+            '/js?num=4&delay=' + getJSDelay(),
+            '/js?num=5&delay=' + getJSDelay()
+          ];
+      }
+
       function jsComplete() {
         jslog('callback');
       }
@@ -142,11 +168,13 @@
       }
 
       btnLoadCSS.onclick = function () {
+        var urls = getCSSUrls();
+
         cssPollStart();
         csslog('loading (sequential calls)');
 
-        for (var i = 0; i < css.length; i += 1) {
-          LazyLoad.css(css[i], cssComplete);
+        for (var i = 0; i < urls.length; ++i) {
+          LazyLoad.css(urls[i], cssComplete);
         }
       }
 
@@ -154,21 +182,23 @@
         cssPollStart();
         csslog('loading (single call)');
 
-        LazyLoad.css(css, cssComplete);
+        LazyLoad.css(getCSSUrls(), cssComplete);
       }
 
       btnLoadJS.onclick = function () {
+        var urls = getJSUrls();
+
         jslog('loading (sequential calls)');
 
-        for (var i = 0; i < js.length; i += 1) {
-          LazyLoad.js(js[i], jsComplete);
+        for (var i = 0; i < urls.length; ++i) {
+          LazyLoad.js(urls[i], jsComplete);
         }
       }
 
       btnLoadJSSingle.onclick = function () {
         jslog('loading (single call)');
 
-        LazyLoad.js(js, jsComplete);
+        LazyLoad.js(getJSUrls(), jsComplete);
       }
     </script>
   </body>
