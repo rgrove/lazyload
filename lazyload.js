@@ -277,8 +277,13 @@ LazyLoad = (function (doc) {
   @private
   */
   function pollGecko(node) {
+    var hasRules;
+
     try {
-      node.sheet.cssRules;
+      // We don't really need to store this value or ever refer to it again, but
+      // if we don't store it, Closure Compiler assumes the code is useless and
+      // removes it.
+      hasRules = !!node.sheet.cssRules;
     } catch (ex) {
       // An exception means the stylesheet is still loading.
       pollCount += 1;
@@ -289,7 +294,7 @@ LazyLoad = (function (doc) {
         // We've been polling for 10 seconds and nothing's happened. Stop
         // polling and finish the pending requests to avoid blocking further
         // requests.
-        finish('css');
+        hasRules && finish('css');
       }
 
       return;

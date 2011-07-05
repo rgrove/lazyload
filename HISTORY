@@ -1,7 +1,10 @@
 LazyLoad Changelog
 ================================================================================
 
-Version 2.0.3 (git)
+Version 2.0.3 (2011-07-05)
+  * Fixed a bug caused by an unwanted Closure Compiler optimization that broke
+    CSS load completion detection in Gecko when using the minified version of
+    LazyLoad. [Allex Wang]
   * Fixed a race condition in which a URL could be removed from the "pending"
     queue if it finished loading before other URLs in the same batch had been
     added to the queue, resulting in the queue's length changing unexpectedly
