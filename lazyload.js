@@ -57,7 +57,29 @@ LazyLoad = (function (doc) {
   queue = {css: [], js: []},
 
   // Reference to the browser's list of stylesheets.
-  styleSheets = doc.styleSheets;
+  styleSheets = doc.styleSheets,
+
+  // Hashmap of the browser's preloaded scripts and stylesheets
+  loaded = (function (doc) {
+    var results = {},
+      scrpts = doc.getElementsByTagName("scri" + "pt");
+    
+    for (var i = 0, l = scrpts.length; i < l; i++) {
+      var scrpt = scrpts[i];
+      if (scrpt.src && scrpt.src.length) {
+        results[scrpt.src] = "loaded";
+      }
+    }
+    
+    for (var i = 0, l = doc.styleSheets.length; i < l; i++) {
+      var styleSheet = doc.styleSheets[i];
+      if (styleSheet && styleSheet.href) {
+        results[styleSheet.href] = "loaded";
+      }
+    }
+    
+    return results;
+  })(doc);
 
   // -- Private Methods --------------------------------------------------------
 
@@ -100,7 +122,9 @@ LazyLoad = (function (doc) {
       callback = p.callback;
       urls     = p.urls;
 
-      urls.shift();
+      // Change the status of the url to loaded in hashmap
+      var url = urls.shift();
+      loaded[url] = "loaded";
       pollCount = 0;
 
       // If this is the last of the pending URLs, execute the callback and
@@ -137,6 +161,14 @@ LazyLoad = (function (doc) {
       || (env.unknown = true);
   }
 
+  function checkStatus(type) {
+	delete this.toLoad[type];
+	for (var t in this.toLoad) {
+		return;
+	}
+	this.callback && this.callback.call(this.context, this.obj);
+  }
+
   /**
   Loads the specified resources, or the next resource of the specified type
   in the queue if no resources are specified. If a resource of the specified
@@ -159,7 +191,7 @@ LazyLoad = (function (doc) {
     be executed in this object's context
   @private
   */
-  function load(type, urls, callback, obj, context) {
+  function load(type, urls, callback, obj, context, once) {
     var _finish = function () { finish(type); },
         isCSS   = type === 'css',
         nodes   = [],
@@ -172,6 +204,19 @@ LazyLoad = (function (doc) {
       // array and create a copy of it so modifications won't be made to the
       // original.
       urls = typeof urls === 'string' ? [urls] : urls.concat();
+      
+      // Remove urls that have already loaded, if load once specified
+      if (once) {
+        urls = urls.filter(function (url, index, urls) {
+          if (!loaded[url]) {
+            loaded[url] = "queued";
+            return url;
+          }
+        });
+        if (urls.length === 0) {
+            callback && callback.call(context,obj);
+        }
+      }
 
       // Create a request object for each URL. If multiple URLs are specified,
       // the callback will only be executed after all URLs have been loaded.
@@ -227,6 +272,7 @@ LazyLoad = (function (doc) {
       }
 
       node.className = 'lazyload';
+      node.id = "id" + btoa(url).replace(/\=/ig,":");
       node.setAttribute('charset', 'utf-8');
 
       if (env.ie && !isCSS) {
@@ -259,6 +305,7 @@ LazyLoad = (function (doc) {
 
     for (i = 0, len = nodes.length; i < len; ++i) {
       head.appendChild(nodes[i]);
+      loaded[atob(nodes[i].id.substring(2).replace(/\:/ig,"="))] = "pending";
     }
   }
 
@@ -357,10 +404,12 @@ LazyLoad = (function (doc) {
     @param {Object} obj (optional) object to pass to the callback function
     @param {Object} context (optional) if provided, the callback function
       will be executed in this object's context
+    @param {boolean} once (optional) if provided, the URLs will only be loaded
+      if they have not been loaded before
     @static
     */
-    css: function (urls, callback, obj, context) {
-      load('css', urls, callback, obj, context);
+    css: function (urls, callback, obj, context, once) {
+      load('css', urls, callback, obj, context, once);
     },
 
     /**
@@ -381,10 +430,97 @@ LazyLoad = (function (doc) {
     @param {Object} obj (optional) object to pass to the callback function
     @param {Object} context (optional) if provided, the callback function
       will be executed in this object's context
+    @param {boolean} once (optional) if provided, the URLs will only be loaded
+      if they have not been loaded before
     @static
     */
-    js: function (urls, callback, obj, context) {
-      load('js', urls, callback, obj, context);
+    js: function (urls, callback, obj, context, once) {
+      load('js', urls, callback, obj, context, once);
+    },
+
+    /**
+    Requests the specified JavaScript and/or CSS URL or URLs and executes the
+    specified callback (if any) when they have finished loading. If an array of
+    URLs is specified and the browser supports it, the scripts will be loaded
+    in parallel and the callback will be executed after all scripts have
+    finished loading.
+
+    Currently, only Firefox and Opera support parallel loading of scripts while
+    preserving execution order. In other browsers, scripts will be
+    queued and loaded one at a time to ensure correct execution order.
+
+    @method load
+    @param {String|Array} urls JS and/or CSS URL or array of JS and/or URLs to
+      load
+    @param {Function} callback (optional) callback function to execute when
+      the specified scripts are loaded
+    @param {Object} obj (optional) object to pass to the callback function
+    @param {Object} context (optional) if provided, the callback function
+      will be executed in this object's context
+    @param {boolean} once (optional) if provided, the URLs will only be loaded
+      if they have not been loaded before
+    @static
+    */
+    load: function (urls, callback, obj, context, once) {
+      
+      // Parameters that will be passed in to the callback as the context
+      var parameters = {
+          callback: callback,
+          obj: obj,
+          context: context
+        },
+
+        // A hashmap of Arrays for each type of load item (JS and CSS)
+        toLoad = parameters.toLoad = {};
+
+      // Make sure we have an array (this is also done in the inner load)
+      urls = typeof urls === 'string' ? [urls] : urls;
+
+      // Split the urls into separate types
+      urls.map(function (url, index, urls) {
+        var extension = url.substring(url.lastIndexOf(".") + 1);
+        if (extension === url) {
+            extension = url.match("(js|css)")[1];
+        }
+     
+        // Create the array if it hasn't already been created
+        toLoad[extension] = toLoad[extension] || [];
+   
+        // Place it into the array in the proper type
+        toLoad[extension].push(url);
+
+        return; 
+      });
+    
+      for (var type in toLoad) {
+        load(type, toLoad[type], checkStatus, type, parameters, once);
+      }
+    },
+
+    /**
+    Requests the specified JavaScript and/or CSS URL or URLs and executes the
+    specified callback (if any) when they have finished loading. If an array of
+    URLs is specified and the browser supports it, the scripts will be loaded
+    in parallel and the callback will be executed after all scripts have
+    finished loading. If the URL has already been loaded (either by LazyLoad
+    or before LazyLoad itself is loaded), the URL will not be loaded again.
+
+    Currently, only Firefox and Opera support parallel loading of scripts while
+    preserving execution order. In other browsers, scripts will be
+    queued and loaded one at a time to ensure correct execution order.
+
+    @method load
+    @param {String|Array} urls JS and/or CSS URL or array of JS and/or URLs to
+      load
+    @param {Function} callback (optional) callback function to execute when
+      the specified scripts are loaded
+    @param {Object} obj (optional) object to pass to the callback function
+    @param {Object} context (optional) if provided, the callback function
+      will be executed in this object's context
+    @static
+    */
+    loadOnce: function (urls, callback, obj, context) {
+        this.load(urls, callback, obj, context, true);
     }
 
   };
