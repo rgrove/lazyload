@@ -137,6 +137,20 @@ LazyLoad = (function (doc) {
       || (env.unknown = true);
   }
 
+
+//Simple browser version sniffing - Could easily be incorporated into the getEnv function to save a few bytes.
+
+ var Browser = {
+  Version: function() {
+    var version = 999; // we assume a sane browser
+    if (navigator.appVersion.indexOf("MSIE") != -1)
+      // bah, IE again, lets downgrade version number
+      version = parseFloat(navigator.appVersion.split("MSIE")[1]);
+    return version;
+  }
+}
+
+
   /**
   Loads the specified resources, or the next resource of the specified type
   in the queue if no resources are specified. If a resource of the specified
@@ -229,7 +243,7 @@ LazyLoad = (function (doc) {
       node.className = 'lazyload';
       node.setAttribute('charset', 'utf-8');
 
-      if (env.ie && !isCSS) {
+      if (env.ie && !isCSS && Browser.Version() < 10) {
         node.onreadystatechange = function () {
           if (/loaded|complete/.test(node.readyState)) {
             node.onreadystatechange = null;
