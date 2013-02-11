@@ -1,16 +1,6 @@
 /*jslint browser: true, eqeqeq: true, bitwise: true, newcap: true, immed: true, regexp: false */
 
-/**
-LazyLoad makes it easy and painless to lazily load one or more external
-JavaScript or CSS files on demand either during or after the rendering of a web
-page.
-
-Supported browsers include Firefox 2+, IE6+, Safari 3+ (including Mobile
-Safari), Google Chrome, and Opera 9+. Other browsers may or may not work and
-are not officially supported.
-
-Visit https://github.com/rgrove/lazyload/ for more info.
-
+/*! 
 Copyright (c) 2011 Ryan Grove <ryan@wonko.com>
 All rights reserved.
 
@@ -30,13 +20,24 @@ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+/**
+LazyLoad makes it easy and painless to lazily load one or more external
+JavaScript or CSS files on demand either during or after the rendering of a web
+page.
+
+Supported browsers include Firefox 2+, IE6+, Safari 3+ (including Mobile
+Safari), Google Chrome, and Opera 9+. Other browsers may or may not work and
+are not officially supported.
+
+Visit https://github.com/rgrove/lazyload/ for more info.
 
 @module lazyload
 @class LazyLoad
 @static
 @version 2.0.3 (git)
 */
-
 LazyLoad = (function (doc) {
   // -- Private Variables ------------------------------------------------------
 
