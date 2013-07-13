@@ -34,7 +34,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @module lazyload
 @class LazyLoad
 @static
-@version 2.0.3 (git)
 */
 
 LazyLoad = (function (doc) {
@@ -131,7 +130,7 @@ LazyLoad = (function (doc) {
     };
 
     (env.webkit = /AppleWebKit\//.test(ua))
-      || (env.ie = /MSIE/.test(ua))
+      || (env.ie = /MSIE|Trident/.test(ua))
       || (env.opera = /Opera/.test(ua))
       || (env.gecko = /Gecko\//.test(ua))
       || (env.unknown = true);
