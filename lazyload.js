@@ -229,7 +229,7 @@ LazyLoad = (function (doc) {
       node.className = 'lazyload';
       node.setAttribute('charset', 'utf-8');
 
-      if (env.ie && !isCSS) {
+      if (env.ie && !isCSS && 'onreadystatechange' in node && !('draggable' in node)) {
         node.onreadystatechange = function () {
           if (/loaded|complete/.test(node.readyState)) {
             node.onreadystatechange = null;
