@@ -35,8 +35,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @class LazyLoad
 @static
 */
+if ( typeof window !== "object" || typeof window.document !== "object") {
+    throw "LazyLoad must be loaded in a browser environment";
+}
 
-LazyLoad = (function (doc) {
+var LazyLoad = (function (doc) {
   // -- Private Variables ------------------------------------------------------
 
   // User agent and feature test information.
@@ -387,4 +390,22 @@ LazyLoad = (function (doc) {
     }
 
   };
-})(this.document);
+})(window.document);
+
+if ( typeof module === "object" && module && typeof module.exports === "object" ) {
+    // Expose lazyload as module.exports in loaders that implement the Node
+    // module pattern (including browserify). Do not create the global, since
+    // the user will be storing it themselves locally, and globals are frowned
+    // upon in the Node module world.
+    module.exports = LazyLoad;
+} else if ( typeof define === "function" && define.amd ) {
+    // Register as a named AMD module, since LazyLoad can be concatenated with other
+    // files that may use define, but not via a proper concatenation script that
+    // understands anonymous AMD modules. A named AMD is safest and most robust
+    // way to register. Lowercase lazyload is used because AMD module names are
+    // derived from file names, and LazyLoad is normally delivered in a lowercase
+    // file name.
+    define( "lazyload", [], function () { return LazyLoad; } );
+} else {
+    window.LazyLoad = LazyLoad;
+}
