@@ -210,7 +210,7 @@ LazyLoad = (function (doc) {
     }
 
     head || (head = doc.head || doc.getElementsByTagName('head')[0]);
-    pendingUrls = p.urls;
+    pendingUrls = p.urls.concat();
 
     for (i = 0, len = pendingUrls.length; i < len; ++i) {
       url = pendingUrls[i];
