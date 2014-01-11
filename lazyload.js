@@ -210,12 +210,7 @@ LazyLoad = (function (doc) {
     }
 
     head || (head = doc.head || doc.getElementsByTagName('head')[0]);
-    pendingUrls = [];
-
-    // Copy original array (prevents CSS loaded array shift to mess up current loop index)
-    for (i = 0, len = p.urls.length; i < len; ++i) {
-      pendingUrls.push(p.urls[i]);
-    }
+    pendingUrls = p.urls.concat();
 
     for (i = 0, len = pendingUrls.length; i < len; ++i) {
       url = pendingUrls[i];
