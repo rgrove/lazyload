@@ -58,7 +58,7 @@ LazyLoad.js({url: 'http://example.com/foo.js', id: 'myScript'}, function() {
   alert(document.getElementById('myScript').tagName);
 });
 
-LazyLoad.css(['foo.js', 'bar.js', {url: 'baz.js', media: 'print'}], function() {
+LazyLoad.css(['foo.css', 'bar.css', {url: 'baz.css', media: 'print'}], function() {
   alert('all styles have been loaded');
 });
 ```
