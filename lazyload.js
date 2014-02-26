@@ -73,7 +73,7 @@ LazyLoad = (function (doc) {
     var node = doc.createElement(name), attr;
 
     for (attr in attrs) {
-      if (attrs.hasOwnProperty(attr)) {
+      if (attrs.hasOwnProperty(attr) && attrs[attr] !== null) {
         node.setAttribute(attr, attrs[attr]);
       }
     }
@@ -150,7 +150,7 @@ LazyLoad = (function (doc) {
 
   @method load
   @param {String} type resource type ('css' or 'js')
-  @param {String|Array} urls (optional) URL or array of URLs to load
+  @param {String|Object|Array} urls (optional) URL or array of URLs to load
   @param {Function} callback (optional) callback function to execute when the
     resource is loaded
   @param {Object} obj (optional) object to pass to the callback function
@@ -167,10 +167,9 @@ LazyLoad = (function (doc) {
     env || getEnv();
 
     if (urls) {
-      // If urls is a string, wrap it in an array. Otherwise assume it's an
-      // array and create a copy of it so modifications won't be made to the
-      // original.
-      urls = typeof urls === 'string' ? [urls] : urls.concat();
+      // If urls is not an array, wrap it in an array. Otherwise create a copy 
+      // of it so modifications won't be made to the original.
+      urls = Object.prototype.toString.call(urls) === '[object Array]' ? urls.concat() : [urls];
 
       // Create a request object for each URL. If multiple URLs are specified,
       // the callback will only be executed after all URLs have been loaded.
@@ -214,19 +213,32 @@ LazyLoad = (function (doc) {
 
     for (i = 0, len = pendingUrls.length; i < len; ++i) {
       url = pendingUrls[i];
+      if (typeof url === 'object') {
+        attrs = url;
+        url = attrs.url;
+        attrs.url = null;
+      }
+      else {
+        attrs = {};
+      }
 
       if (isCSS) {
-          node = env.gecko ? createNode('style') : createNode('link', {
-            href: url,
-            rel : 'stylesheet'
-          });
+        attrs.href = url;
+        attrs.rel = 'stylesheet';
+        node = env.gecko ? createNode('style') : createNode('link', attrs);
       } else {
-        node = createNode('script', {src: url});
+        attrs.src = url;
+        node = createNode('script', attrs);
         node.async = false;
       }
 
-      node.className = 'lazyload';
-      node.setAttribute('charset', 'utf-8');
+      if (typeof attrs.className === 'undefined') {
+        node.className = 'lazyload';
+      }
+
+      if (typeof attrs.charset === 'undegined') {
+        node.setAttribute('charset', 'utf-8');
+      }
 
       if (env.ie && !isCSS && 'onreadystatechange' in node && !('draggable' in node)) {
         node.onreadystatechange = function () {
@@ -350,7 +362,7 @@ LazyLoad = (function (doc) {
     will be executed after all stylesheets have finished loading.
 
     @method css
-    @param {String|Array} urls CSS URL or array of CSS URLs to load
+    @param {String|Object|Array} urls CSS URL or array of CSS URLs to load
     @param {Function} callback (optional) callback function to execute when
       the specified stylesheets are loaded
     @param {Object} obj (optional) object to pass to the callback function
@@ -374,7 +386,7 @@ LazyLoad = (function (doc) {
     queued and loaded one at a time to ensure correct execution order.
 
     @method js
-    @param {String|Array} urls JS URL or array of JS URLs to load
+    @param {String|Object|Array} urls JS URL or array of JS URLs to load
     @param {Function} callback (optional) callback function to execute when
       the specified scripts are loaded
     @param {Object} obj (optional) object to pass to the callback function
