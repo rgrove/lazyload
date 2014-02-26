@@ -53,7 +53,7 @@ LazyLoad.css('foo.css', function () {
 If you need to set some attributes for resource tags you can just use objects 
 instead of strings.
 
-```
+```js
 LazyLoad.js({url: 'http://example.com/foo.js', id: 'myScript'}, function() {
   alert(document.getElementById('myScript').tagName);
 });
