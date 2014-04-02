@@ -38,7 +38,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 var LazyLoad = (function (doc) {
 
-  'user strict';
+  'use strict';
   
   // -- Private Variables ------------------------------------------------------
 
