@@ -67,7 +67,7 @@ based on a recent version of Gecko or WebKit will probably work.
 Caveats
 -------
 
-All browsers support parallel loading of CSS. However, only Firefox and Opera
+All browsers support parallel loading of CSS. However, _only_ Firefox and Opera
 currently support parallel script loading while preserving execution order. To
 ensure that scripts are always executed in the correct order, LazyLoad will load
 all scripts sequentially in browsers other than Firefox and Opera. Hopefully
