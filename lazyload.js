@@ -126,7 +126,10 @@ LazyLoad = (function (doc) {
       // True if this browser supports disabling async mode on dynamically
       // created script nodes. See
       // http://wiki.whatwg.org/wiki/Dynamic_Script_Execution_Order
-      async: doc.createElement('script').async === true
+      async: doc.createElement('script').async === true,
+      //new version of webkit and gecko browsers have supported 'onload'
+      //and 'onerror' event of link tag
+      onload: 'onload' in doc.createElement('link')
     };
 
     (env.webkit = /AppleWebKit\//.test(ua))
@@ -235,7 +238,7 @@ LazyLoad = (function (doc) {
             _finish();
           }
         };
-      } else if (isCSS && (env.gecko || env.webkit)) {
+      } else if (isCSS && !env.onload) {
         // Gecko and WebKit don't support the onload event on link nodes.
         if (env.webkit) {
           // In WebKit, we can poll for changes to document.styleSheets to
