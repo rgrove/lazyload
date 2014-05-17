@@ -36,8 +36,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @static
 */
 
-LazyLoad = (function (doc) {
+LazyLoad = (function (window) {
+
   // -- Private Variables ------------------------------------------------------
+
+  // reference to the document
+  var doc = window.document;
+
+  // restored later on, if `noConflict` is used.
+  var previousLazyLoad = window.LazyLoad;
 
   // User agent and feature test information.
   var env,
@@ -384,7 +391,21 @@ LazyLoad = (function (doc) {
     */
     js: function (urls, callback, obj, context) {
       load('js', urls, callback, obj, context);
+    },
+
+    /**
+     Sets the window.LazyLoad object back to it's original value.  You can capture
+     the return value of LazyLoad.noConflict() to keep a local reference to LazyLoad,
+     while not polluting the global namespace.  This is useful for embedding LazyLoad onto
+     third-party websites where it may have to co-exist with existing implementations.
+     @return {Object} LazyLoad object
+     @static
+     */
+    noConflict: function(){
+      window.LazyLoad = previousLazyLoad;
+      return this;
     }
 
+
   };
-})(this.document);
+})(this);
