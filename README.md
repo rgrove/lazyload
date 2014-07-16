@@ -1,6 +1,8 @@
 LazyLoad
 ========
 
+**Note:** LazyLoad is no longer being maintained. I'm not responding to issues or pull requests, since I don't use this project anymore and don't have time to work on it. Please feel free to fork it if you want to continue development on it.
+
 LazyLoad is a tiny (only 966 bytes minified and gzipped), dependency-free
 JavaScript utility that makes it super easy to load external JavaScript and CSS
 files on demand.
