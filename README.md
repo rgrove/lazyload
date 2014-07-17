@@ -52,6 +52,12 @@ LazyLoad.css('foo.css', function () {
 }, null, {foo: 'bar'});
 ```
 
+```noConflict
+// Restore the global environment and retain a copy of the script for later use
+MySuperFramework.Loader = LazyLoad.noConflict();
+```
+
+
 Supported Browsers
 ------------------
 
