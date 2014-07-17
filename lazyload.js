@@ -66,11 +66,18 @@ LazyLoad = (function (doc) {
   @method createNode
   @param {String} name element name
   @param {Object} attrs name/value mapping of element attributes
+  @param {Object} attrs name/value mapping of additional custom element attributes
   @return {HTMLElement}
   @private
   */
-  function createNode(name, attrs) {
+  function createNode(name, attrs, customattrs) {
     var node = doc.createElement(name), attr;
+
+    for (attr in customattrs) {
+      if (customattrs.hasOwnProperty(attr)) {
+        node.setAttribute(attr, customattrs[attr]);
+      }
+    }
 
     for (attr in attrs) {
       if (attrs.hasOwnProperty(attr)) {
@@ -156,9 +163,10 @@ LazyLoad = (function (doc) {
   @param {Object} obj (optional) object to pass to the callback function
   @param {Object} context (optional) if provided, the callback function will
     be executed in this object's context
+  @param {Object} attrs name/value mapping of additional element attributes
   @private
   */
-  function load(type, urls, callback, obj, context) {
+  function load(type, urls, callback, obj, context, attrs) {
     var _finish = function () { finish(type); },
         isCSS   = type === 'css',
         nodes   = [],
@@ -216,17 +224,14 @@ LazyLoad = (function (doc) {
       url = pendingUrls[i];
 
       if (isCSS) {
-          node = env.gecko ? createNode('style') : createNode('link', {
+          node = env.gecko ? createNode('style', {}, attrs) : createNode('link', {
             href: url,
             rel : 'stylesheet'
-          });
+          }, attrs);
       } else {
-        node = createNode('script', {src: url});
+        node = createNode('script', {src: url}, attrs);
         node.async = false;
       }
-
-      node.className = 'lazyload';
-      node.setAttribute('charset', 'utf-8');
 
       if (env.ie && !isCSS && 'onreadystatechange' in node && !('draggable' in node)) {
         node.onreadystatechange = function () {
@@ -356,10 +361,11 @@ LazyLoad = (function (doc) {
     @param {Object} obj (optional) object to pass to the callback function
     @param {Object} context (optional) if provided, the callback function
       will be executed in this object's context
+    @param {Object} attrs (optional) name/value mapping of additional element attributes
     @static
     */
-    css: function (urls, callback, obj, context) {
-      load('css', urls, callback, obj, context);
+    css: function (urls, callback, obj, context, attrs) {
+      load('css', urls, callback, obj, context, attrs);
     },
 
     /**
@@ -380,10 +386,11 @@ LazyLoad = (function (doc) {
     @param {Object} obj (optional) object to pass to the callback function
     @param {Object} context (optional) if provided, the callback function
       will be executed in this object's context
+    @param {Object} attrs (optional) name/value mapping of additional element attributes
     @static
     */
-    js: function (urls, callback, obj, context) {
-      load('js', urls, callback, obj, context);
+    js: function (urls, callback, obj, context, attrs) {
+      load('js', urls, callback, obj, context, attrs);
     }
 
   };
