@@ -36,7 +36,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @static
 */
 
-LazyLoad = (function (doc) {
+lazyload = (function (doc) {
   // -- Private Variables ------------------------------------------------------
 
   // User agent and feature test information.
