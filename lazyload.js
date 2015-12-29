@@ -1,6 +1,5 @@
 // Filename: lazyload.js  
-// Timestamp: 2015.12.28-23:34:55 (last modified)
-// Author(s): bumblehead <chris@bumblehead.com>
+// Timestamp: 2015.12.28-23:36:48 (last modified)
 
 /*jslint browser: true, eqeqeq: true, bitwise: true, newcap: true, immed: true, regexp: false */
 
