@@ -1,3 +1,6 @@
+// Filename: lazyload.js  
+// Timestamp: 2015.12.28-23:36:48 (last modified)
+
 /*jslint browser: true, eqeqeq: true, bitwise: true, newcap: true, immed: true, regexp: false */
 
 /**
@@ -36,7 +39,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @static
 */
 
-LazyLoad = (function (doc) {
+lazyload = module.exports = (function (doc) {
   // -- Private Variables ------------------------------------------------------
 
   // User agent and feature test information.
@@ -387,4 +390,4 @@ LazyLoad = (function (doc) {
     }
 
   };
-})(this.document);
+})(this.document || {});

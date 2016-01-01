@@ -1,0 +1,16 @@
+{
+  "name": "lazyload",
+  "main": "lazyload",
+  "version": "2.0.4",
+  "license" : "MIT",
+  "readmeFilename": "README.md",
+  "description": "LazyLoad is a tiny (only 966 bytes minified and gzipped), dependency-free JavaScript utility that makes it super easy to load external JavaScript and CSS files on demand.",
+
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rgrove/lazyload.git"
+  },
+  "keywords": [
+    "lazyload"
+  ]
+}
