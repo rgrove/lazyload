@@ -162,7 +162,7 @@ LazyLoad = (function (doc) {
     var _finish = function () { finish(type); },
         isCSS   = type === 'css',
         nodes   = [],
-        i, len, node, p, pendingUrls, url;
+        i, node, p, pendingUrls, url;
 
     env || getEnv();
 
@@ -192,7 +192,7 @@ LazyLoad = (function (doc) {
         });
       } else {
         // Load sequentially.
-        for (i = 0, len = urls.length; i < len; ++i) {
+        for (var i = 0, len = urls.length; i < len; ++i) {
           queue[type].push({
             urls    : [urls[i]],
             callback: i === len - 1 ? callback : null, // callback is only added to the last URL
@@ -212,7 +212,7 @@ LazyLoad = (function (doc) {
     head || (head = doc.head || doc.getElementsByTagName('head')[0]);
     pendingUrls = p.urls.concat();
 
-    for (i = 0, len = pendingUrls.length; i < len; ++i) {
+    for (var i = 0, len = pendingUrls.length; i < len; ++i) {
       url = pendingUrls[i];
 
       if (isCSS) {
@@ -256,7 +256,7 @@ LazyLoad = (function (doc) {
       nodes.push(node);
     }
 
-    for (i = 0, len = nodes.length; i < len; ++i) {
+    for (var i = 0, len = nodes.length; i < len; ++i) {
       head.appendChild(nodes[i]);
     }
   }
