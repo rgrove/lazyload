@@ -1,0 +1,12 @@
+{
+  "name": "lazyload",
+  "repo": "rgrove/lazyload",
+  "description": "A componentized lazyload to work in AMD and CommonJS as well",
+  "version": "2.0.3",
+  "keywords": [],
+  "license": "MIT",
+  "main": "lazyload.js",
+  "scripts": [
+    "lazyload.js"
+  ]
+}
