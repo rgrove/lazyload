@@ -37,6 +37,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 LazyLoad = (function (doc) {
+
+  'user strict';
+  
   // -- Private Variables ------------------------------------------------------
 
   // User agent and feature test information.
