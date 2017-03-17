@@ -20,7 +20,7 @@
         width: 100px;
       }
 
-      #n1,#n2,#n3,#n4,#n5 { width: 0; }
+      #n1,#n2,#n3,#n4,#n5,#n6,#n7,#n8,#n9,#n10 { width: 0; }
     </style>
   </head>
   <body>
@@ -34,6 +34,7 @@
           <input type="button" id="btnLoadJS" value="Load JS (sequential calls)">
           <input type="button" id="btnLoadJSSingle" value="Load JS (single call)">
           <label><input type="checkbox" id="jsDelay" checked> Random delay</label>
+          <label><input type="checkbox" id="jsOnce"> Load once</label>
         </p>
 
         <p>
@@ -48,6 +49,7 @@
           <input type="button" id="btnLoadCSS" value="Load CSS (sequential calls)">
           <input type="button" id="btnLoadCSSSingle" value="Load CSS (single call)">
           <label><input type="checkbox" id="cssDelay" checked> Random delay</label>
+          <label><input type="checkbox" id="cssOnce"> Load once</label>
         </p>
 
         <p>
@@ -62,6 +64,18 @@
         <div id="n4"></div>
         <div id="n5"></div>
       </fieldset>
+
+      <fieldset>
+        <legend>JavaScript and CSS</legend>
+
+        <p>
+          <input type="button" id="btnLoadBoth" value="Load JS+CSS (sequential calls)">
+          <input type="button" id="btnLoadBothSingle" value="Load JS+CSS (single call)">
+          <label><input type="checkbox" id="bothOnce"> Load once</label>
+        </p>
+
+      </fieldset>
+
     </form>
 
     <script src="lazyload.js"></script>
@@ -70,10 +84,17 @@
           btnLoadCSSSingle = document.getElementById('btnLoadCSSSingle'),
           btnLoadJS        = document.getElementById('btnLoadJS'),
           btnLoadJSSingle  = document.getElementById('btnLoadJSSingle'),
+          btnLoadJS        = document.getElementById('btnLoadJS'),
+          btnLoadJSSingle  = document.getElementById('btnLoadJSSingle'),
+          btnLoadBoth        = document.getElementById('btnLoadBoth'),
+          btnLoadBothSingle  = document.getElementById('btnLoadBothSingle'),
           cssDelay         = document.getElementById('cssDelay'),
           cssLogEl         = document.getElementById('csslog'),
           jsDelay          = document.getElementById('jsDelay'),
           jsLogEl          = document.getElementById('jslog'),
+		  cssOnce		   = document.getElementById('cssOnce'),
+		  jsOnce		   = document.getElementById('jsOnce'),
+		  bothOnce		   = document.getElementById('bothOnce'),
 
           n1 = document.getElementById('n1'),
           n2 = document.getElementById('n2'),
@@ -149,6 +170,26 @@
           return jsDelay.checked ? Math.floor(Math.random() * 5001) : 0;
       }
 
+      // Returns a delay between 0 and 5000ms if enabled.
+      function getBothDelay() {
+          return bothDelay.checked ? Math.floor(Math.random() * 5001) : 0;
+      }
+
+	  // Returns parameter to only load files once
+	  function getJSOnce() {
+		  return jsOnce.checked;
+	  }
+
+	  // Returns parameter to only load files once
+	  function getCSSOnce() {
+		  return cssOnce.checked;
+	  }
+
+	  // Returns parameter to only load files once
+	  function getBothOnce() {
+		  return bothOnce.checked;
+	  }
+
       function getJSUrls() {
           return [
             '/js?num=1&delay=' + getJSDelay(),
@@ -162,19 +203,26 @@
       function jsComplete() {
         jslog('callback');
       }
-      
+
+      function bothComplete() {
+		console.log("both complete");
+	    jsComplete();
+	    cssComplete();
+      }
+
       function jslog(message) {
         jsLogEl.value += "[" + (new Date()).toTimeString() + "] " + message + "\r\n";
       }
 
       btnLoadCSS.onclick = function () {
         var urls = getCSSUrls();
+		var once = !!getCSSOnce();
 
         cssPollStart();
         csslog('loading (sequential calls)');
 
         for (var i = 0; i < urls.length; ++i) {
-          LazyLoad.css(urls[i], cssComplete);
+          LazyLoad.css(urls[i], cssComplete, null, null, once);
         }
       }
 
@@ -182,24 +230,62 @@
         cssPollStart();
         csslog('loading (single call)');
 
-        LazyLoad.css(getCSSUrls(), cssComplete);
+		var once = !!getCSSOnce();
+
+        LazyLoad.css(getCSSUrls(), cssComplete, null, null, once);
       }
 
       btnLoadJS.onclick = function () {
         var urls = getJSUrls();
+		var once = !!getJSOnce();
 
         jslog('loading (sequential calls)');
 
         for (var i = 0; i < urls.length; ++i) {
-          LazyLoad.js(urls[i], jsComplete);
+          LazyLoad.js(urls[i], jsComplete, null, null, once);
         }
       }
 
       btnLoadJSSingle.onclick = function () {
+		var once = !!getJSOnce();
+
         jslog('loading (single call)');
 
-        LazyLoad.js(getJSUrls(), jsComplete);
+        LazyLoad.js(getJSUrls(), jsComplete, null, null, once);
       }
+
+      btnLoadBoth.onclick = function () {
+		var once = !!getBothOnce();
+        var urls = getJSUrls().concat(getCSSUrls());
+        cssPollStart();
+
+        jslog('JS: loading (sequential calls)');
+        csslog('CSS: loading (sequential calls)');
+
+        for (var i = 0; i < urls.length; ++i) {
+		  var type = urls[i].match("js|css")[0];
+          LazyLoad.loadOnce(urls[i], window[type + "Complete"]);
+        }
+      }
+
+      btnLoadBothSingle.onclick = function () {
+		var once = !!getBothOnce();
+        cssPollStart();
+
+        jslog('JS: loading (single call)');
+        csslog('CSS: loading (single call)');
+
+        LazyLoad.loadOnce(getJSUrls().concat(getCSSUrls()), bothComplete);
+      }
+
+	  jsOnce.onclick = function () {
+		jsDelay.checked = false;
+	  };
+
+	  cssOnce.onclick = function () {
+		cssDelay.checked = false;
+	  };
+
     </script>
   </body>
 </html>
