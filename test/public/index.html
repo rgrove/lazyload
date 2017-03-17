@@ -88,7 +88,7 @@
             'http://pieisgood.org/test/lazyload/js.php?num=2',
             'http://pieisgood.org/test/lazyload/js.php?num=3',
             'http://pieisgood.org/test/lazyload/js.php?num=4',
-            'http://pieisgood.org/test/lazyload/js.php?num=5'
+            'http://pieisgood.org/test/lazyload/js.php?num=5',
           ];
 
       function cssComplete() {
@@ -140,7 +140,7 @@
             '/css?num=2&delay=' + getCSSDelay(),
             '/css?num=3&delay=' + getCSSDelay(),
             '/css?num=4&delay=' + getCSSDelay(),
-            '/css?num=5&delay=' + getCSSDelay()
+            {url: '/css?num=5&delay=' + getCSSDelay(), media: 'screen'}
           ];
       }
 
@@ -155,7 +155,7 @@
             '/js?num=2&delay=' + getJSDelay(),
             '/js?num=3&delay=' + getJSDelay(),
             '/js?num=4&delay=' + getJSDelay(),
-            '/js?num=5&delay=' + getJSDelay()
+            {url: '/js?num=5&delay=' + getJSDelay(), id: 'testScript'}
           ];
       }
 
